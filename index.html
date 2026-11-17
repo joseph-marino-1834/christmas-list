@@ -124,6 +124,11 @@ select{font-size:16px;padding-right:12px}
 footer{background:var(--pine);color:#d6e2db;text-align:center;font-size:15px}
 footer b{font-family:"Young Serif",serif;font-weight:400;font-size:22px;color:#fff;display:block;margin-bottom:4px}
 
+.hero .wrap{padding-bottom:clamp(14px,2.6vw,34px)}
+.drift{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:clamp(28px,5vw,64px);display:block;pointer-events:none}
+.gift{cursor:pointer}
+.gift.wob{animation:wob .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes wob{0%{transform:scale(1)}30%{transform:scale(1.08,.92)}60%{transform:scale(.96,1.05)}100%{transform:scale(1)}}
 @media(max-width:700px){.hero .wrap{grid-template-columns:minmax(0,1fr)}.hero-text{padding-bottom:0}.scene{max-height:300px}}
 @media(prefers-reduced-motion:reduce){.gift{animation:none}.card{opacity:1;transform:none;transition:none}#snow{display:none}}
 </style>
@@ -139,34 +144,9 @@ footer b{font-family:"Young Serif",serif;font-weight:400;font-size:22px;color:#f
       <p>Here's what I'm hoping for this year. Tap any gift to see where to get it, and hit “I'm getting this” so nobody doubles up.</p>
       <div class="count" id="count" aria-label="Countdown to Christmas"></div>
     </div>
-    <svg class="scene" viewBox="0 0 520 380" role="img" aria-label="A pile of wrapped presents">
-      <defs>
-        <linearGradient id="gR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d93a4b"/><stop offset="1" stop-color="#9c1c2c"/></linearGradient>
-        <linearGradient id="gW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbf8f1"/><stop offset="1" stop-color="#dcd5c6"/></linearGradient>
-        <linearGradient id="gG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a7357"/><stop offset="1" stop-color="#174f3c"/></linearGradient>
-        <linearGradient id="gY" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2cd6c"/><stop offset="1" stop-color="#c9952c"/></linearGradient>
-        <g id="bow"><path d="M0 0c-22-20-38-6-26 6 8 8 26-6 26-6zM0 0c22-20 38-6 26 6-8 8-26-6-26-6z" fill="#e2b54a" stroke="#b8862a" stroke-width="2"/><circle r="6" fill="#c9952c"/></g>
-      </defs>
-      <ellipse cx="260" cy="368" rx="250" ry="12" fill="#000" opacity=".22"/>
-      <!-- back left tall -->
-      <g class="gift"><rect x="40" y="140" width="130" height="230" rx="6" fill="url(#gG)"/><rect x="40" y="140" width="130" height="10" fill="#fff" opacity=".18"/>
-        <rect x="98" y="140" width="14" height="230" fill="#e2b54a"/><use href="#bow" x="105" y="140"/></g>
-      <!-- back right -->
-      <g class="gift"><rect x="330" y="170" width="150" height="200" rx="6" fill="url(#gW)"/><rect x="330" y="170" width="150" height="10" fill="#fff" opacity=".5"/>
-        <rect x="398" y="170" width="14" height="200" fill="#c4283a"/><rect x="330" y="255" width="150" height="14" fill="#c4283a"/>
-        <g transform="translate(405 170)"><path d="M0 0c-22-20-38-6-26 6 8 8 26-6 26-6zM0 0c22-20 38-6 26 6-8 8-26-6-26-6z" fill="#c4283a"/><circle r="6" fill="#9c1c2c"/></g></g>
-      <!-- middle big red -->
-      <g class="gift"><rect x="150" y="200" width="200" height="170" rx="6" fill="url(#gR)"/><rect x="150" y="200" width="200" height="10" fill="#fff" opacity=".2"/>
-        <rect x="243" y="200" width="16" height="170" fill="#e2b54a"/><rect x="150" y="276" width="200" height="16" fill="#e2b54a"/><use href="#bow" x="251" y="200"/>
-        <g fill="#fff" opacity=".25"><circle cx="180" cy="240" r="4"/><circle cx="320" cy="330" r="4"/><circle cx="200" cy="340" r="3"/><circle cx="305" cy="232" r="3"/></g></g>
-      <!-- front small gold -->
-      <g class="gift"><rect x="20" y="292" width="110" height="78" rx="5" fill="url(#gY)"/><rect x="68" y="292" width="12" height="78" fill="#0f3d2e"/>
-        <g transform="translate(74 292) scale(.7)"><path d="M0 0c-22-20-38-6-26 6 8 8 26-6 26-6zM0 0c22-20 38-6 26 6-8 8-26-6-26-6z" fill="#0f3d2e"/><circle r="6" fill="#0a2a20"/></g></g>
-      <!-- front small green -->
-      <g class="gift"><rect x="372" y="300" width="120" height="70" rx="5" fill="url(#gG)"/><rect x="372" y="328" width="120" height="12" fill="#f3efe6"/>
-        <rect x="426" y="300" width="12" height="70" fill="#f3efe6"/></g>
-    </svg>
+    <svg class="scene" id="scene" viewBox="0 105 540 300" role="img" aria-label="A pile of shiny wrapped presents with big bows"></svg>
   </div>
+  <svg class="drift" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70V38C80 18 150 14 240 30S420 52 520 34 700 8 820 26 1010 50 1100 30 1180 22 1200 26V70Z" fill="var(--bg)"/><path d="M0 70V50C120 36 210 40 330 50S560 60 700 46 960 40 1200 52V70Z" fill="var(--bg)" opacity=".6"/></svg>
 </header>
 
 <main class="band">
@@ -385,17 +365,80 @@ function tick(){
 }
 tick();setInterval(tick,1000);
 
+// presents
+const sc=document.getElementById('scene');
+const P=[
+  {x:70,f:352,w:118,h:176,d:46,c:['#b6ff7a','#5fd13a','#2f8f1c'],r:['#ff4a57','#b3142a']},
+  {x:272,f:352,w:126,h:150,d:52,c:['#fff07a','#ffc61a','#c98a00'],r:['#9b6bff','#4b26b0'],swirl:1},
+  {x:150,f:384,w:148,h:112,d:50,c:['#ff8a8a','#e8303f','#9c1426'],r:['#c6ff8a','#3f9e22']},
+  {x:22,f:390,w:98,h:78,d:38,c:['#9fe3ff','#3aa6f0','#1d63b5'],r:['#ffe066','#cf9310']},
+  {x:356,f:392,w:112,h:76,d:44,c:['#ffc4e2','#ff6fb5','#c93a83'],r:['#ffffff','#cfc3e6']},
+];
+const pt=a=>a.map(p=>p.map(n=>n.toFixed(1)).join(',')).join(' ');
+let defs='',body='';
+P.forEach((g,i)=>{
+  const {x,w,h,d,c,r}=g,y=g.f-h,k=.55;
+  const S=(t,v)=>[x+w+d*t,y+v-d*k*t], T=(u,t)=>[x+u+d*t,y-d*k*t];
+  const rb=Math.max(12,w*.13), rt=rb/w/2*w/d*.9;
+  defs+=`<linearGradient id="f${i}" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".45" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient>
+  <linearGradient id="s${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient>
+  <linearGradient id="r${i}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${r[1]}"/><stop offset=".35" stop-color="${r[0]}"/><stop offset=".6" stop-color="${r[0]}"/><stop offset="1" stop-color="${r[1]}"/></linearGradient>
+  <clipPath id="c${i}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath>
+  <radialGradient id="b${i}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".25" stop-color="${r[0]}"/><stop offset="1" stop-color="${r[1]}"/></radialGradient>`;
+  const s=w*.36, bx=T(w/2,.5)[0], by=T(w/2,.5)[1];
+  const loop=(rot,len,dark)=>`<g transform="rotate(${rot})"><path d="M0 0C${len*.25} ${-len*.55} ${len*1.05} ${-len*.5} ${len} ${-len*.08}C${len*.95} ${len*.25} ${len*.35} ${len*.18} 0 0Z" fill="${dark?r[1]:`url(#b${i})`}" stroke="${r[1]}" stroke-width="2.2" stroke-linejoin="round"/><path d="M${len*.22} ${-len*.08}C${len*.45} ${-len*.32} ${len*.82} ${-len*.3} ${len*.8} ${-len*.1}" fill="none" stroke="${r[1]}" stroke-width="2" stroke-linecap="round" opacity=".55"/></g>`;
+  body+=`<g class="gift" style="animation-delay:${i*.12}s">
+  <ellipse cx="${x+w/2+d/2}" cy="${g.f+2}" rx="${w*.62+d/2}" ry="${8+d*.12}" fill="#000" opacity=".22"/>
+  <polygon points="${pt([[x,y],[x+w,y],S(1,0),T(0,1)])}" fill="${c[0]}"/>
+  <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="url(#f${i})"/>
+  ${g.swirl?`<g clip-path="url(#c${i})" opacity=".28" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"><path d="M${x+8} ${y+h*.3}q${w*.2} ${-h*.18} ${w*.38} 0t${w*.4} 0"/><path d="M${x+6} ${y+h*.62}q${w*.22} ${-h*.18} ${w*.42} 0t${w*.42} 0"/><path d="M${x+10} ${y+h*.9}q${w*.2} ${-h*.12} ${w*.36} 0"/></g>`:''}
+  <polygon points="${pt([[x+w,y],S(1,0),S(1,h),[x+w,y+h]])}" fill="url(#s${i})"/>
+  <rect x="${x+w/2-rb/2}" y="${y}" width="${rb}" height="${h}" fill="url(#r${i})"/>
+  <polygon points="${pt([S(.5-rt,0),S(.5+rt,0),S(.5+rt,h),S(.5-rt,h)])}" fill="${r[1]}"/>
+  <polygon points="${pt([T(w/2-rb/2,0),T(w/2+rb/2,0),T(w/2+rb/2,1),T(w/2-rb/2,1)])}" fill="${r[0]}"/>
+  <polygon points="${pt([T(0,.5-rt),T(w,.5-rt),T(w,.5+rt),T(0,.5+rt)])}" fill="${r[0]}" opacity=".92"/>
+  <rect x="${x+6}" y="${y+6}" width="${w*.12}" height="${h-12}" rx="${w*.06}" fill="#fff" opacity=".22"/>
+  <polygon points="${pt([[x,y],[x+w,y],S(1,0),T(0,1)])}" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.5"/>
+  <g transform="translate(${bx} ${by})">
+    <path d="M-4 2C${-s*.3} ${s*.5} ${-s*.4} ${s*.9} ${-s*.55} ${s*1.25}L${-s*.32} ${s*1.1} ${-s*.22} ${s*1.32}C${-s*.12} ${s*.9} -2 ${s*.4} 4 4Z" fill="${r[1]}"/>
+    <path d="M4 2C${s*.3} ${s*.5} ${s*.45} ${s*.85} ${s*.62} ${s*1.18}L${s*.38} ${s*1.08} ${s*.3} ${s*1.3}C${s*.16} ${s*.9} 2 ${s*.4} -4 4Z" fill="${r[0]}" stroke="${r[1]}" stroke-width="1.5"/>
+    ${loop(-150,s*.95,1)}${loop(-30,s*.95,1)}${loop(-178,s,0)}${loop(-2,s,0)}${loop(-125,s*.85,0)}${loop(-55,s*.85,0)}
+    <ellipse rx="${s*.2}" ry="${s*.17}" fill="url(#b${i})" stroke="${r[1]}" stroke-width="2.2"/>
+  </g></g>`;
+});
+sc.innerHTML=`<defs>${defs}</defs>${body}`;
+sc.querySelectorAll('.gift').forEach(g=>g.addEventListener('click',()=>{g.classList.remove('wob');g.style.animationDelay='0s';void g.getBBox();g.classList.add('wob')}));
+
 // snow
 const cv=document.getElementById('snow'),ctx=cv.getContext&&cv.getContext('2d');
 if(ctx&&!reduce){
-  let W,H,flakes=[];
-  const size=()=>{const r=devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*r;cv.height=H*r;ctx.setTransform(r,0,0,r,0,0);
-    flakes=Array.from({length:Math.round(W/9)},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2.2+.8,s:Math.random()*.6+.3,d:Math.random()*Math.PI*2}))};
+  let W,H,flakes=[],mx=-999,my=-999,t=0;
+  const hero=cv.parentElement;
+  const make=(top)=>{const z=Math.random()**1.6;const crystal=Math.random()<.07;return{x:Math.random()*W,y:top?-10:Math.random()*H,z,r:crystal?5+z*7:.6+z*3.4,crystal,a:Math.random()*6.28,spin:(Math.random()-.5)*.03,ph:Math.random()*6.28,vx:0,vy:0}};
+  const size=()=>{const pr=devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*pr;cv.height=H*pr;ctx.setTransform(pr,0,0,pr,0,0);flakes=Array.from({length:Math.round(W*H/5200)},()=>make(false))};
   size();new ResizeObserver(size).observe(cv);
+  hero.addEventListener('pointermove',e=>{const b=cv.getBoundingClientRect();mx=e.clientX-b.left;my=e.clientY-b.top});
+  hero.addEventListener('pointerleave',()=>{mx=my=-999});
+  const star=(f,al)=>{ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.a);ctx.strokeStyle=`rgba(255,255,255,${al})`;ctx.lineWidth=1.2;ctx.lineCap='round';ctx.beginPath();
+    for(let i=0;i<6;i++){ctx.rotate(Math.PI/3);ctx.moveTo(0,0);ctx.lineTo(0,-f.r);ctx.moveTo(0,-f.r*.55);ctx.lineTo(f.r*.28,-f.r*.78);ctx.moveTo(0,-f.r*.55);ctx.lineTo(-f.r*.28,-f.r*.78)}
+    ctx.stroke();ctx.restore()};
   (function loop(){
-    ctx.clearRect(0,0,W,H);ctx.fillStyle='rgba(255,255,255,.85)';
-    for(const f of flakes){f.y+=f.s;f.d+=.01;f.x+=Math.sin(f.d)*.4;if(f.y>H+4){f.y=-4;f.x=Math.random()*W}
-      ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill()}
+    t+=1;const wind=Math.sin(t*.004)*.5+Math.sin(t*.0013)*.7;
+    ctx.clearRect(0,0,W,H);
+    for(const f of flakes){
+      const sp=.25+f.z*1.1;
+      f.ph+=.012;
+      const dx=f.x-mx,dy=f.y-my,dd=dx*dx+dy*dy;
+      if(dd<8100){const m=(1-Math.sqrt(dd)/90)*.9;f.vx+=dx/90*m;f.vy+=dy/90*m}
+      f.vx*=.93;f.vy*=.93;
+      f.x+=wind*sp+Math.sin(f.ph)*.35*(.4+f.z)+f.vx;f.y+=sp+f.vy;f.a+=f.spin;
+      if(f.y>H+12)Object.assign(f,make(true));
+      if(f.x>W+12)f.x=-12;else if(f.x<-12)f.x=W+12;
+      const al=(.35+f.z*.6)*(.75+.25*Math.sin(f.ph*2.3));
+      if(f.crystal){star(f,al);continue}
+      if(f.z>.75){const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r*1.8);g.addColorStop(0,`rgba(255,255,255,${al})`);g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(f.x,f.y,f.r*1.8,0,6.283);ctx.fill()}
+      else{ctx.fillStyle=`rgba(255,255,255,${al})`;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,6.283);ctx.fill()}
+    }
     requestAnimationFrame(loop)})();
 }
 }
