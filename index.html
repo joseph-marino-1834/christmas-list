@@ -144,7 +144,81 @@ footer b{font-family:"Young Serif",serif;font-weight:400;font-size:22px;color:#f
       <p>Here's what I'm hoping for this year. Tap any gift to see where to get it, and hit “I'm getting this” so nobody doubles up.</p>
       <div class="count" id="count" aria-label="Countdown to Christmas"></div>
     </div>
-    <svg class="scene" id="scene" viewBox="0 92 540 312" role="img" aria-label="A pile of shiny wrapped presents with big bows"></svg>
+    <svg class="scene" id="scene" viewBox="-10 125 540 292" role="img" aria-label="A pile of shiny wrapped presents with big bows">
+  <defs><symbol id="present" viewBox="0 0 220 240" overflow="visible">
+      <!-- ground shadow -->
+      <ellipse cx="108" cy="226" rx="96" ry="12" fill="#000" opacity=".22"/>
+
+      <!-- BODY: side face -->
+      <path d="M140 104 C160 96 178 88 192 80 C195 120 194 160 190 196 C176 206 158 214 142 220 C145 182 145 142 140 104Z" fill="var(--d)"/>
+      <!-- BODY: front face (slightly puffy) -->
+      <path d="M24 104 C62 110 102 110 140 104 C145 142 145 182 142 220 C102 226 60 226 26 220 C20 182 19 142 24 104Z" fill="var(--m)"/>
+      <!-- front shading: soft dark on right, light on left -->
+      <path d="M104 108 C118 108 130 106 140 104 C145 142 145 182 142 220 C130 222 118 223 106 223 C112 184 112 146 104 108Z" fill="#000" opacity=".10"/>
+      <path d="M24 104 C34 106 44 107 54 108 C50 146 50 186 54 223 C44 223 34 222 26 220 C20 182 19 142 24 104Z" fill="#fff" opacity=".16"/>
+      <path d="M34 124 C33 150 33 178 36 204" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".55"/>
+      <!-- side shading -->
+      <path d="M176 88 C182 85 187 82 192 80 C195 120 194 160 190 196 C185 199 180 202 174 205 C179 166 180 126 176 88Z" fill="#000" opacity=".12"/>
+
+      <!-- BODY ribbon: front -->
+      <path d="M71 109 C70 146 70 184 72 225 L95 225 C93 184 93 146 94 109Z" fill="var(--r)"/>
+      <path d="M77 112 C76 148 76 184 78 220" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+      <path d="M90 110 C89 148 89 186 91 225 L95 225 C93 184 93 146 94 109Z" fill="#000" opacity=".15"/>
+      <!-- BODY ribbon: side -->
+      <path d="M160 96 C163 134 163 172 161 212 L172 207 C175 168 175 130 172 90Z" fill="var(--rd)"/>
+
+      <!-- LID: side -->
+      <path d="M146 80 C166 72 184 64 200 56 C202 68 202 80 200 92 C184 100 166 108 146 116 C148 104 148 92 146 80Z" fill="var(--d)"/>
+      <!-- LID: front band -->
+      <path d="M14 82 C58 88 104 88 146 80 C148 92 148 104 146 116 C104 124 58 124 16 118 C13 106 12 94 14 82Z" fill="var(--m)"/>
+      <path d="M14 82 C58 88 104 88 146 80 C147 86 147 91 147 96 C104 103 58 103 15 97 C14 92 14 87 14 82Z" fill="#fff" opacity=".18"/>
+      <path d="M110 86 C122 85 134 83 146 80 C148 92 148 104 146 116 C134 119 122 121 110 122Z" fill="#000" opacity=".10"/>
+      <path d="M26 96 C46 99 66 100 86 100" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+      <!-- LID: top -->
+      <path d="M14 82 C40 70 68 60 96 52 C130 46 168 48 200 56 C184 64 166 72 146 80 C104 88 58 88 14 82Z" fill="var(--l)"/>
+      <path d="M40 76 C64 66 92 58 120 56" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".5"/>
+      <!-- LID ribbon: front + side -->
+      <path d="M70 86 C70 98 70 110 71 122 L95 122 C94 110 94 98 95 86Z" fill="var(--r)"/>
+      <path d="M77 89 C77 100 77 110 78 119" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+      <path d="M166 72 C168 84 168 96 166 108 L177 103 C179 91 179 79 177 67Z" fill="var(--rd)"/>
+      <!-- LID ribbon: top cross -->
+      <path d="M70 86 C92 76 112 66 132 54 L150 52 C132 64 112 76 95 86Z" fill="var(--r)"/>
+      <path d="M38 77 C76 72 120 70 177 67 L166 72 C120 76 78 80 52 82Z" fill="var(--r)"/>
+      <path d="M38 77 C76 72 120 70 177 67" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+
+      <!-- BOW tails -->
+      <path d="M104 70 C96 86 86 100 70 112 L82 112 L84 124 C100 110 108 92 112 72Z" fill="var(--rd)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M112 70 C122 84 136 96 152 104 L140 108 L142 120 C126 110 114 94 106 74Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M116 78 C124 88 134 96 144 102" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+      <!-- BOW back loops -->
+      <path d="M108 66 C92 46 62 30 50 46 C40 60 66 74 108 66Z" fill="var(--rd)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M108 66 C126 44 160 30 170 48 C178 62 150 74 108 66Z" fill="var(--rd)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <!-- BOW top loops -->
+      <path d="M106 64 C96 34 78 10 66 18 C54 28 74 54 106 64Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M110 64 C120 34 140 12 152 20 C164 30 142 56 110 64Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M74 24 C80 32 88 44 96 54" fill="none" stroke="var(--rk)" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+      <path d="M144 26 C138 34 130 46 120 56" fill="none" stroke="var(--rk)" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+      <!-- BOW front loops -->
+      <path d="M106 68 C80 58 40 54 32 72 C26 88 62 90 106 68Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M110 68 C136 56 176 54 184 72 C190 88 154 90 110 68Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M44 66 C58 62 76 62 92 66" fill="none" stroke="var(--rk)" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+      <path d="M172 66 C158 62 140 62 124 66" fill="none" stroke="var(--rk)" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+      <!-- bow shine -->
+      <ellipse cx="74" cy="26" rx="6" ry="3.4" transform="rotate(-40 74 26)" fill="#fff" opacity=".75"/>
+      <ellipse cx="148" cy="26" rx="6" ry="3.4" transform="rotate(40 148 26)" fill="#fff" opacity=".6"/>
+      <ellipse cx="44" cy="66" rx="8" ry="3.6" transform="rotate(-10 44 66)" fill="#fff" opacity=".7"/>
+      <ellipse cx="172" cy="66" rx="8" ry="3.6" transform="rotate(10 172 66)" fill="#fff" opacity=".55"/>
+      <!-- knot -->
+      <path d="M96 58 C100 52 116 52 120 58 C124 66 120 76 108 78 C96 76 92 66 96 58Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5"/>
+      <ellipse cx="103" cy="61" rx="5" ry="3.2" fill="#fff" opacity=".7"/>
+      <path d="M100 74 C106 77 112 77 117 73" fill="none" stroke="var(--rk)" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+    </symbol></defs>
+  <g class="gift"><use href="#present" x="36" y="151" width="196" height="214" style="--l:#c8ff8f;--m:#5fd13a;--d:#2b8a1a;--r:#ff3d4d;--rd:#c41a2e;--rk:#7d0d1c"/></g>
+  <g class="gift"><use href="#present" x="300" y="138" width="206" height="225" style="--l:#fff38a;--m:#ffc81f;--d:#c78600;--r:#a77bff;--rd:#5a2fd0;--rk:#2e1475"/></g>
+  <g class="gift"><use href="#present" x="138" y="182" width="214" height="233" style="--l:#ffa3a3;--m:#ec3644;--d:#9c1426;--r:#9cf06a;--rd:#3f9e22;--rk:#1f5c10"/></g>
+  <g class="gift"><use href="#present" x="-6" y="250" width="150" height="164" style="--l:#b6ecff;--m:#3aa8f2;--d:#1b5fb0;--r:#ffe066;--rd:#d89a10;--rk:#7a5200"/></g>
+  <g class="gift"><use href="#present" x="362" y="244" width="158" height="172" style="--l:#ffd6ea;--m:#ff74b8;--d:#c43a80;--r:#ffffff;--rd:#d9cfee;--rk:#8a7bab"/></g>
+</svg>
   </div>
   <svg class="drift" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70V38C80 18 150 14 240 30S420 52 520 34 700 8 820 26 1010 50 1100 30 1180 22 1200 26V70Z" fill="var(--bg)"/><path d="M0 70V50C120 36 210 40 330 50S560 60 700 46 960 40 1200 52V70Z" fill="var(--bg)" opacity=".6"/></svg>
 </header>
@@ -365,61 +439,8 @@ function tick(){
 }
 tick();setInterval(tick,1000);
 
-// presents
-const sc=document.getElementById('scene');
-const P=[
-  {x:72,f:350,w:112,h:170,d:40,c:['#c8ff8f','#62d63c','#2b8a1a'],r:['#ff5a66','#b3142a']},
-  {x:276,f:350,w:120,h:146,d:44,c:['#fff38a','#ffc81f','#c78600'],r:['#a77bff','#4b26b0'],swirl:1},
-  {x:152,f:382,w:142,h:110,d:42,c:['#ff9a9a','#ec3644','#9c1426'],r:['#d2ff96','#3f9e22']},
-  {x:24,f:388,w:96,h:78,d:32,c:['#aee9ff','#3aa8f2','#1b5fb0'],r:['#ffe680','#cf9310']},
-  {x:356,f:390,w:108,h:76,d:36,c:['#ffd0e8','#ff74b8','#c43a80'],r:['#ffffff','#cbbfe4']},
-];
-const pt=a=>a.map(p=>p.map(n=>n.toFixed(1)).join(',')).join(' ');
-const RJ=(pts,fill,sw,extra='')=>`<polygon points="${pt(pts)}" fill="${fill}" stroke="${fill}" stroke-width="${sw}" stroke-linejoin="round" ${extra}/>`;
-let defs='',body='';
-P.forEach((g,i)=>{
-  const {w,h,d,c,r}=g,k=.5,R=Math.max(8,w*.09);
-  const lid=h*.2,ov=w*.045;
-  const x=g.f, y=g.f-h; const X=g.x;
-  const S=(x0,w0,y0,t,v)=>[x0+w0+d*t,y0+v-d*k*t], T=(x0,y0,u,t)=>[x0+u+d*t,y0-d*k*t];
-  const rb=Math.max(12,w*.14), rt=.13;
-  defs+=`<linearGradient id="f${i}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${c[1]}"/><stop offset=".22" stop-color="${c[0]}"/><stop offset=".55" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient>
-  <linearGradient id="s${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient>
-  <radialGradient id="t${i}" cx=".4" cy=".4" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".35" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></radialGradient>
-  <linearGradient id="r${i}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${r[1]}"/><stop offset=".3" stop-color="${r[0]}"/><stop offset=".55" stop-color="#fff" stop-opacity=".9"/><stop offset=".7" stop-color="${r[0]}"/><stop offset="1" stop-color="${r[1]}"/></linearGradient>
-  <clipPath id="c${i}"><rect x="${X}" y="${y}" width="${w}" height="${h}" rx="${R}"/></clipPath>
-  <radialGradient id="b${i}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".28" stop-color="${r[0]}"/><stop offset="1" stop-color="${r[1]}"/></radialGradient>`;
-  // geometry: body (X,y,w,h) and lid (X-ov, y-? , w+2ov, lid)
-  const LX=X-ov, LW=w+ov*2, LY=y-lid*.15;
-  const s=w*.4, top=T(LX,LY,LW/2,.5);
-  const loop=(rot,len,dark)=>`<g transform="rotate(${rot})"><path d="M0 0C${len*.2} ${-len*.62} ${len*1.1} ${-len*.62} ${len} ${-len*.05}C${len*.95} ${len*.3} ${len*.3} ${len*.22} 0 0Z" fill="${dark?r[1]:`url(#b${i})`}" stroke="${r[1]}" stroke-width="2.4" stroke-linejoin="round"/><path d="M${len*.25} ${-len*.1}C${len*.5} ${-len*.38} ${len*.85} ${-len*.34} ${len*.82} ${-len*.08}" fill="none" stroke="${r[1]}" stroke-width="2.2" stroke-linecap="round" opacity=".5"/><ellipse cx="${len*.55}" cy="${-len*.32}" rx="${len*.16}" ry="${len*.07}" transform="rotate(-12 ${len*.55} ${-len*.32})" fill="#fff" opacity="${dark?0:.55}"/></g>`;
-  const sw=R*1.1;
-  body+=`<g class="gift" style="animation-delay:${i*.12}s">
-  <ellipse cx="${X+w/2+d/2}" cy="${g.f+3}" rx="${w*.62+d/2}" ry="${8+d*.14}" fill="#000" opacity=".25"/>
-  ${RJ([[X,y],S(X,w,y,0,0),S(X,w,y,1,0),S(X,w,y,1,h),[X+w,y+h]],c[2],sw)}
-  ${RJ([[X+w,y],S(X,w,y,1,0),S(X,w,y,1,h),[X+w,y+h]],`url(#s${i})`,sw,`stroke="${c[2]}"`)}
-  <rect x="${X}" y="${y}" width="${w}" height="${h}" rx="${R}" fill="url(#f${i})"/>
-  ${g.swirl?`<g clip-path="url(#c${i})" opacity=".3" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"><path d="M${X-4} ${y+h*.42}q${w*.22} ${-h*.2} ${w*.44} 0t${w*.44} 0"/><path d="M${X-6} ${y+h*.75}q${w*.24} ${-h*.2} ${w*.46} 0t${w*.46} 0"/></g>`:''}
-  <polygon points="${pt([S(X,w,y,.5-rt,0),S(X,w,y,.5+rt,0),S(X,w,y,.5+rt,h),S(X,w,y,.5-rt,h)])}" fill="${r[1]}"/>
-  <rect x="${X+w/2-rb/2}" y="${y}" width="${rb}" height="${h}" fill="url(#r${i})"/>
-  <rect x="${X+w*.08}" y="${y+lid+8}" width="${w*.1}" height="${h-lid-20}" rx="${w*.05}" fill="#fff" opacity=".35"/>
-  ${RJ([[LX+LW,LY],S(LX,LW,LY,1,0),S(LX,LW,LY,1,lid),[LX+LW,LY+lid]],c[2],sw*.8)}
-  <rect x="${LX}" y="${LY}" width="${LW}" height="${lid}" rx="${R*.8}" fill="url(#f${i})" stroke="${c[2]}" stroke-opacity=".35" stroke-width="1.5"/>
-  ${RJ([[LX,LY],[LX+LW,LY],S(LX,LW,LY,1,0),T(LX,LY,0,1)],`url(#t${i})`,sw*.8,`stroke="${c[0]}"`)}
-  <rect x="${X+w/2-rb/2}" y="${LY}" width="${rb}" height="${lid}" fill="url(#r${i})"/>
-  <polygon points="${pt([S(LX,LW,LY,.5-rt,0),S(LX,LW,LY,.5+rt,0),S(LX,LW,LY,.5+rt,lid),S(LX,LW,LY,.5-rt,lid)])}" fill="${r[1]}"/>
-  <polygon points="${pt([T(LX,LY,LW/2-rb/2,0),T(LX,LY,LW/2+rb/2,0),T(LX,LY,LW/2+rb/2,1),T(LX,LY,LW/2-rb/2,1)])}" fill="${r[0]}"/>
-  <polygon points="${pt([T(LX,LY,0,.5-rt),T(LX,LY,LW,.5-rt),T(LX,LY,LW,.5+rt),T(LX,LY,0,.5+rt)])}" fill="${r[0]}"/>
-  <rect x="${LX+LW*.08}" y="${LY+lid*.22}" width="${LW*.3}" height="${lid*.22}" rx="${lid*.11}" fill="#fff" opacity=".4"/>
-  <g transform="translate(${top[0]} ${top[1]})">
-    <path d="M-4 2C${-s*.3} ${s*.5} ${-s*.45} ${s*.9} ${-s*.6} ${s*1.2}L${-s*.36} ${s*1.08} ${-s*.24} ${s*1.3}C${-s*.12} ${s*.9} -2 ${s*.4} 4 4Z" fill="${r[1]}"/>
-    <path d="M4 2C${s*.3} ${s*.5} ${s*.48} ${s*.85} ${s*.66} ${s*1.14}L${s*.42} ${s*1.05} ${s*.32} ${s*1.28}C${s*.16} ${s*.9} 2 ${s*.4} -4 4Z" fill="${r[0]}" stroke="${r[1]}" stroke-width="1.5"/>
-    ${loop(-152,s*.95,1)}${loop(-28,s*.95,1)}${loop(-178,s,0)}${loop(-2,s,0)}${loop(-122,s*.9,0)}${loop(-58,s*.9,0)}
-    <ellipse rx="${s*.22}" ry="${s*.19}" fill="url(#b${i})" stroke="${r[1]}" stroke-width="2.4"/>
-  </g></g>`;
-});
-sc.innerHTML=`<defs>${defs}</defs>${body}`;
-sc.querySelectorAll('.gift').forEach(g=>g.addEventListener('click',()=>{g.classList.remove('wob');g.style.animationDelay='0s';void g.getBBox();g.classList.add('wob')}));
+// presents: squish on click
+document.querySelectorAll('#scene .gift').forEach(g=>g.addEventListener('click',()=>{g.classList.remove('wob');g.style.animationDelay='0s';void g.getBBox();g.classList.add('wob')}));
 
 // snow
 const cv=document.getElementById('snow'),ctx=cv.getContext&&cv.getContext('2d');
