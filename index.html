@@ -211,11 +211,11 @@ footer b{font-family:"Young Serif",serif;font-weight:400;font-size:22px;color:#f
 {
 // ====== EDIT YOUR LIST HERE ======
 // wrap important bits in **double stars** to make them bold
-// qty: how many people can claim it (e.g. gift cards). Leave out for 1.
+// qty: how many people can claim it, or "any" for no limit (e.g. gift cards). Leave out for 1.
 // priority: "top" (really want), "would" (would love), "nice" (nice to have)
 const gifts = [
-  {store:"Apple", name:"Apple gift card", cat:"Gift cards", pri:"would", qty:3, price:25, note:"A **$25** Apple gift card — works for the App Store, apps and more.", link:"https://www.apple.com/shop/gift-cards"},
-  {store:"Starbucks", name:"Starbucks gift card", cat:"Gift cards", pri:"would", qty:3, price:25, priceText:"$25–50", note:"Any amount from **$25 to $50**, whatever works for you.", link:"https://www.starbucks.com/gift"},
+  {store:"Apple", name:"Apple gift card", cat:"Gift cards", pri:"would", qty:"any", price:25, note:"A **$25** Apple gift card — works for the App Store, apps and more.", link:"https://www.apple.com/shop/gift-cards"},
+  {store:"Starbucks", name:"Starbucks gift card", cat:"Gift cards", pri:"would", qty:"any", price:25, priceText:"$25–50", note:"Any amount from **$25 to $50**, whatever works for you.", link:"https://www.starbucks.com/gift"},
   {store:"American Eagle", name:"Snoopy flannel PJ pants", cat:"Clothes", pri:"would", price:26.97, note:"American Eagle, **charcoal**, **size Large**. On sale right now (usually $44.95).", link:"https://www.ae.com/us/en/p/men/loungewear-pjs/pajamas/aeo-snoopy-flannel-pj-pant/0239_2138_008"},
   {store:"American Eagle", name:"Cozy Cabin graphic sweater", cat:"Clothes", pri:"would", price:52.46, note:"American Eagle, **soft oat**, **size 2XL**. On sale right now (usually $74.95).", link:"https://www.ae.com/us/en/p/men/tops/sweaters/ae-cozy-cabin-graphic-sweater/1142_2391_164"},
   {store:"American Eagle", name:"Boxy fit layered t-shirt", cat:"Clothes", pri:"would", price:34.96, note:"American Eagle, **navy**, **size XL**. On sale right now (usually $49.95).", link:"https://www.ae.com/us/en/p/men/tops/t-shirts/ae-boxy-fit-layered-t-shirt/2171_5479_410"},
@@ -252,9 +252,10 @@ let fs=false,me="",ready=false,claims={},busy=new Set(),painted=false,mineIds=ne
 const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 me=LS.get('xmas-name')||"";
 try{mineIds=new Set(JSON.parse(LS.get('xmas-mine')||'[]'))}catch(e){}
-const qtyOf=g=>Math.max(1,g.qty||1);
+const qtyOf=g=>g.qty==='any'?Infinity:Math.max(1,g.qty||1);
+const gotSlots=g=>Object.keys(claims).filter(k=>k===g.id||k.startsWith(g.id+'~'));
 const slots=g=>Array.from({length:qtyOf(g)},(_,i)=>i?g.id+'~'+(i+1):g.id);
-const isFull=g=>slots(g).every(k=>claims[k]);
+const isFull=g=>gotSlots(g).length>=qtyOf(g);
 const saveMine=()=>LS.set('xmas-mine',JSON.stringify([...mineIds]));
 function render(){
   let list=gifts.filter(g=>cat==="All"||g.cat===cat);
@@ -262,7 +263,7 @@ function render(){
   list.sort((a,b)=>s==="low"?a.price-b.price:s==="high"?b.price-a.price:priOrder[a.pri]-priOrder[b.pri]);
   list.sort((a,b)=>(isFull(a)?1:0)-(isFull(b)?1:0));
   grid.innerHTML=list.length?list.map((g,i)=>{
-    const q=qtyOf(g), got=slots(g).filter(k=>claims[k]), mySlot=got.find(k=>mineIds.has(k)), mine=!!mySlot, full=got.length>=q, c=got.length>0;
+    const q=qtyOf(g), got=gotSlots(g), mySlot=got.find(k=>mineIds.has(k)), mine=!!mySlot, full=got.length>=q, c=got.length>0;
     const others=got.filter(k=>k!==mySlot).map(k=>esc(claims[k].name||'someone'));
     let act='';
     if(mine) act=`<button class="claim" data-un="${mySlot}" ${busy.has(g.id)?'disabled':''}>Undo</button>`;
@@ -270,7 +271,7 @@ function render(){
     let stamp='';
     if(c){const who=(mine?['You']:[]).concat(others);stamp=q>1?`${who.join(' & ')} ${who.length===1&&!mine?'is':'are'} getting one`:(mine?"You're getting this":"Taken by "+others[0]);}
     if(mine&&q===1)stamp="You're getting this";
-    const left=q>1?`<span class="left">${q-got.length} of ${q} left</span>`:'';
+    const left=q===Infinity?`<span class="left">No limit</span>`:q>1?`<span class="left">${q-got.length} of ${q} left</span>`:'';
     return `
     <article class="card${painted?' in':''}${full?' got':''}${mine?' mine':''}" style="transition-delay:${reduce||painted?0:i*70}ms">
       <span class="ribbon" aria-hidden="true"></span>
@@ -332,7 +333,8 @@ async function claim(id){
   busy.add(id);render();
   try{
     let done=false;
-    for(const k of slots(g)){
+    const tries=qtyOf(g)===Infinity?[g.id+'~'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)]:slots(g);
+    for(const k of tries){
       if(claims[k])continue;
       const r=await api('claims',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({gift_id:k,name:me})});
       if(r.status===409)continue;
