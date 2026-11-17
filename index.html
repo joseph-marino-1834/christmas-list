@@ -87,6 +87,7 @@ select{font-size:16px;padding-right:12px}
 .claim:hover{background:var(--berry);color:#fff}
 .claim:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .claim[disabled]{opacity:.5;cursor:wait}
+.left{margin-left:8px;padding:2px 8px;border-radius:999px;background:light-dark(#e3efe8,#1d4a39);color:light-dark(#1d5a41,#bfe0cf);font-weight:600;white-space:nowrap}
 .taken{font-size:14px;font-weight:600;color:var(--mute)}
 .card.got .gbody{opacity:.55}
 .card.got .ribbon{background:var(--mute)}
@@ -135,7 +136,7 @@ footer b{font-family:"Young Serif",serif;font-weight:400;font-size:22px;color:#f
     <div class="hero-text">
       <div class="from">Christmas 2026</div>
       <h1>Joseph's Christmas List</h1>
-      <p>Hi family! Here's everything I'd love this year. Nothing on here is a must — tap any gift to see where to find it.</p>
+      <p>Here's what I'm hoping for this year. Tap any gift to see where to get it, and hit “I'm getting this” so nobody doubles up.</p>
       <div class="count" id="count" aria-label="Countdown to Christmas"></div>
     </div>
     <svg class="scene" viewBox="0 0 520 380" role="img" aria-label="A pile of wrapped presents">
@@ -210,10 +211,11 @@ footer b{font-family:"Young Serif",serif;font-weight:400;font-size:22px;color:#f
 {
 // ====== EDIT YOUR LIST HERE ======
 // wrap important bits in **double stars** to make them bold
+// qty: how many people can claim it (e.g. gift cards). Leave out for 1.
 // priority: "top" (really want), "would" (would love), "nice" (nice to have)
 const gifts = [
-  {store:"Apple", name:"Apple gift card", cat:"Gift cards", pri:"would", price:25, note:"A **$25** Apple gift card — works for the App Store, apps and more.", link:"https://www.apple.com/shop/gift-cards"},
-  {store:"Starbucks", name:"Starbucks gift card", cat:"Gift cards", pri:"would", price:25, priceText:"$25–50", note:"Any amount from **$25 to $50**, whatever works for you.", link:"https://www.starbucks.com/gift"},
+  {store:"Apple", name:"Apple gift card", cat:"Gift cards", pri:"would", qty:3, price:25, note:"A **$25** Apple gift card — works for the App Store, apps and more.", link:"https://www.apple.com/shop/gift-cards"},
+  {store:"Starbucks", name:"Starbucks gift card", cat:"Gift cards", pri:"would", qty:3, price:25, priceText:"$25–50", note:"Any amount from **$25 to $50**, whatever works for you.", link:"https://www.starbucks.com/gift"},
   {store:"American Eagle", name:"Snoopy flannel PJ pants", cat:"Clothes", pri:"would", price:26.97, note:"American Eagle, **charcoal**, **size Large**. On sale right now (usually $44.95).", link:"https://www.ae.com/us/en/p/men/loungewear-pjs/pajamas/aeo-snoopy-flannel-pj-pant/0239_2138_008"},
   {store:"American Eagle", name:"Cozy Cabin graphic sweater", cat:"Clothes", pri:"would", price:52.46, note:"American Eagle, **soft oat**, **size 2XL**. On sale right now (usually $74.95).", link:"https://www.ae.com/us/en/p/men/tops/sweaters/ae-cozy-cabin-graphic-sweater/1142_2391_164"},
   {store:"American Eagle", name:"Boxy fit layered t-shirt", cat:"Clothes", pri:"would", price:34.96, note:"American Eagle, **navy**, **size XL**. On sale right now (usually $49.95).", link:"https://www.ae.com/us/en/p/men/tops/t-shirts/ae-boxy-fit-layered-t-shirt/2171_5479_410"},
@@ -250,23 +252,31 @@ let fs=false,me="",ready=false,claims={},busy=new Set(),painted=false,mineIds=ne
 const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 me=LS.get('xmas-name')||"";
 try{mineIds=new Set(JSON.parse(LS.get('xmas-mine')||'[]'))}catch(e){}
+const qtyOf=g=>Math.max(1,g.qty||1);
+const slots=g=>Array.from({length:qtyOf(g)},(_,i)=>i?g.id+'~'+(i+1):g.id);
+const isFull=g=>slots(g).every(k=>claims[k]);
 const saveMine=()=>LS.set('xmas-mine',JSON.stringify([...mineIds]));
 function render(){
   let list=gifts.filter(g=>cat==="All"||g.cat===cat);
   const s=sortSel.value;
   list.sort((a,b)=>s==="low"?a.price-b.price:s==="high"?b.price-a.price:priOrder[a.pri]-priOrder[b.pri]);
-  list.sort((a,b)=>(claims[a.id]?1:0)-(claims[b.id]?1:0));
+  list.sort((a,b)=>(isFull(a)?1:0)-(isFull(b)?1:0));
   grid.innerHTML=list.length?list.map((g,i)=>{
-    const c=claims[g.id], mine=c&&mineIds.has(g.id);
+    const q=qtyOf(g), got=slots(g).filter(k=>claims[k]), mySlot=got.find(k=>mineIds.has(k)), mine=!!mySlot, full=got.length>=q, c=got.length>0;
+    const others=got.filter(k=>k!==mySlot).map(k=>esc(claims[k].name||'someone'));
     let act='';
-    if(c) act=mine?`<button class="claim" data-un="${g.id}" ${busy.has(g.id)?'disabled':''}>Undo</button>`:'';
-    else if(fs) act=`<button class="claim" data-claim="${g.id}" ${busy.has(g.id)?'disabled':''}>I'm getting this</button>`;
+    if(mine) act=`<button class="claim" data-un="${mySlot}" ${busy.has(g.id)?'disabled':''}>Undo</button>`;
+    else if(fs&&!full) act=`<button class="claim" data-claim="${g.id}" ${busy.has(g.id)?'disabled':''}>I'm getting this</button>`;
+    let stamp='';
+    if(c){const who=(mine?['You']:[]).concat(others);stamp=q>1?`${who.join(' & ')} ${who.length===1&&!mine?'is':'are'} getting one`:(mine?"You're getting this":"Taken by "+others[0]);}
+    if(mine&&q===1)stamp="You're getting this";
+    const left=q>1?`<span class="left">${q-got.length} of ${q} left</span>`:'';
     return `
-    <article class="card${painted?' in':''}${c?' got':''}${mine?' mine':''}" style="transition-delay:${reduce||painted?0:i*70}ms">
+    <article class="card${painted?' in':''}${full?' got':''}${mine?' mine':''}" style="transition-delay:${reduce||painted?0:i*70}ms">
       <span class="ribbon" aria-hidden="true"></span>
-      ${c?`<span class="stamp">${mine?"You're getting this":"Taken by "+esc(c.name||'someone')}</span>`:''}
+      ${c?`<span class="stamp">${stamp}</span>`:''}
       <div class="gbody" style="display:flex;flex-direction:column;gap:10px">
-      <div class="tag"><span class="cat">${esc(g.cat)}</span><span class="pri ${g.pri}">${priLabel[g.pri]}</span></div>
+      <div class="tag"><span class="cat">${esc(g.cat)}${left}</span><span class="pri ${g.pri}">${priLabel[g.pri]}</span></div>
       ${g.store?`<span class="store">${bag}${esc(g.store)}</span>`:''}
       <h3>${esc(g.name)}</h3>
       <p>${esc(g.note).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</p>
@@ -284,7 +294,7 @@ function renderWho(){
   if(!ready){whoEl.style.display='';whoEl.className='who';whoEl.innerHTML=`<div><span class="dot"></span><b>Loading the list…</b></div>`;return}
   if(!fs){whoEl.style.display='none';return}
   whoEl.style.display='';
-  const n=gifts.filter(g=>claims[g.id]).length;
+  const n=gifts.filter(isFull).length;
   const tally=`<span class="tally">${n} of ${gifts.length} gifts taken</span>`;
   if(!me){whoEl.className='who off';whoEl.innerHTML=`<div><span class="dot"></span><b>Who's shopping?</b><p>${why}</p></div><button class="claim" data-name>Enter your name</button>`;return}
   whoEl.className='who on';whoEl.innerHTML=`<div><span class="dot"></span><b>Hi, ${esc(me)}!</b> <button class="link" data-name>Not you?</button><p>${why} Tap “I'm getting this” on anything you buy.</p></div>${tally}`;
@@ -318,20 +328,27 @@ async function refresh(){
 }
 async function claim(id){
   if(!me){askName(()=>claim(id));return}
+  const g=gifts.find(x=>x.id===id);if(!g)return;
   busy.add(id);render();
   try{
-    const r=await api('claims',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({gift_id:id,name:me})});
-    if(r.status===409){toast('Someone already got that one.')}
-    else if(!r.ok)throw 0;
-    else{mineIds.add(id);saveMine();toast("Got it — it's marked as yours.")}
+    let done=false;
+    for(const k of slots(g)){
+      if(claims[k])continue;
+      const r=await api('claims',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({gift_id:k,name:me})});
+      if(r.status===409)continue;
+      if(!r.ok)throw 0;
+      mineIds.add(k);saveMine();done=true;toast("Got it — it's marked as yours.");break;
+    }
+    if(!done)toast('Someone already got that one.');
   }catch(e){toast("Couldn't save that. Try again in a sec.")}
   finally{await refresh();busy.delete(id);render()}
 }
 async function unclaim(id){
-  busy.add(id);render();
+  const gid=id.split('~')[0];
+  busy.add(gid);render();
   try{const r=await api('claims?gift_id=eq.'+encodeURIComponent(id),{method:'DELETE'});if(!r.ok)throw 0;mineIds.delete(id);saveMine();toast('Unclaimed.')}
   catch(e){toast("Couldn't undo that. Try again in a sec.")}
-  finally{await refresh();busy.delete(id);render()}
+  finally{await refresh();busy.delete(gid);render()}
 }
 grid.addEventListener('click',e=>{
   const a=e.target.closest('[data-claim]'),u=e.target.closest('[data-un]');
