@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joseph's Christmas List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: warm, cozy, a little playful — a note to family, not a store
+   IDEA: a stack of wrapped presents under the tree, each wish a gift tag
+   PICTURE: an SVG pile of wrapped gifts with ribbons under falling snow
+   COLOUR and TYPE: pine green field, berry red, gold ribbon; Young Serif + Outfit
+   LAYOUT: hero scene + countdown, then filterable gift-tag cards, then "good to know" */
+:root{color-scheme:light dark;
+  --bg:light-dark(#f7f5f0,#0c2a20);--ink:light-dark(#14231d,#f3efe6);
+  --pine:#0f3d2e;--pine2:#174f3c;--berry:#c4283a;--berry2:#9c1c2c;--gold:#e2b54a;
+  --card:light-dark(#ffffff,#123628);--line:light-dark(#e3ddd0,#1f4a39);--mute:light-dark(#5b6a63,#b5c4bc)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Outfit,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Young Serif",Georgia,serif;font-weight:400;line-height:1.05;text-wrap:balance;margin:0}
+a{color:inherit}
+.band{padding:clamp(28px,4vw,64px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+
+/* hero */
+.hero{position:relative;background:var(--pine);color:#f3efe6;overflow:hidden;padding-bottom:0}
+#snow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(20px,4vw,56px);align-items:end}
+.hero-text{padding-bottom:clamp(28px,4vw,64px)}
+.hero h1{font-size:clamp(40px,6vw,64px);margin:.2em 0 .35em}
+.hero p{max-width:46ch;color:#d6e2db;font-size:17px;margin:0 0 24px}
+.from{font-size:15px;color:var(--gold);font-weight:500}
+.count{display:flex;gap:10px;flex-wrap:wrap}
+.count div{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 14px;min-width:78px;text-align:center}
+.count b{display:block;font:400 30px/1 "Young Serif",serif;font-variant-numeric:tabular-nums}
+.count span{font-size:13px;color:#b5c4bc}
+.scene{width:100%;height:auto;display:block;max-height:440px}
+.gift{transform-box:fill-box;transform-origin:50% 100%;animation:drop .9s cubic-bezier(.2,.9,.3,1.3) both}
+.gift:nth-of-type(2){animation-delay:.12s}.gift:nth-of-type(3){animation-delay:.24s}.gift:nth-of-type(4){animation-delay:.36s}.gift:nth-of-type(5){animation-delay:.48s}
+@keyframes drop{from{transform:translateY(-60px) scale(.9);opacity:0}to{transform:none;opacity:1}}
+
+/* toolbar */
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:0 0 24px}
+.bar h2{font-size:clamp(32px,4vw,44px)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip,select{font:500 15px Outfit,sans-serif;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.chip[aria-pressed=true]{background:var(--berry);border-color:var(--berry);color:#fff}
+select{font-size:16px;padding-right:12px}
+.chip:focus-visible,select:focus-visible,.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* gift cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:18px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 20px 20px;display:flex;flex-direction:column;gap:10px;
+  opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.card.in{opacity:1;transform:none}
+.card:hover{box-shadow:0 14px 34px -18px rgba(15,61,46,.55);transform:translateY(-3px)}
+.tag{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cat{font-size:13px;color:var(--mute)}
+.pri{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pri.top{background:var(--berry);color:#fff}
+.pri.would{background:light-dark(#fbefd0,#3b3418);color:light-dark(#7a5a10,#f0d488)}
+.pri.nice{background:light-dark(#e3efe8,#1d4a39);color:light-dark(#1d5a41,#bfe0cf)}
+.store{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--berry)}
+:root[data-theme=dark] .store{color:var(--gold)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .store{color:var(--gold)}}
+.card h3{font-size:22px}
+.card p{margin:0;color:var(--mute);font-size:15px}
+.card p b{color:var(--ink);font-weight:600}
+.meta{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.price{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border-radius:999px;background:var(--pine);color:#fff;text-decoration:none;font-weight:500;font-size:15px;transition:background .2s}
+:root[data-theme=dark] .btn{background:var(--gold);color:#14231d}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .btn{background:var(--gold);color:#14231d}}
+.btn:hover{background:var(--berry)}
+.btn svg{transition:transform .2s}.btn:hover svg{transform:translateX(3px)}
+.ribbon{position:absolute;top:-1px;left:22px;width:10px;height:26px;background:var(--gold);border-radius:0 0 3px 3px}
+.who{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 20px;margin:0 0 22px}
+.who b{font-weight:600}
+.who p{margin:4px 0 0;color:var(--mute);font-size:15px;max-width:62ch}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--gold);margin-right:8px;vertical-align:middle}
+.who.on .dot{background:#2f9e6a}.who.off .dot{background:var(--berry)}
+.tally{font-size:15px;font-weight:600;white-space:nowrap}
+.claim{font:500 15px Outfit,sans-serif;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--berry);background:transparent;color:var(--berry);cursor:pointer;transition:background .2s,color .2s}
+.claim:hover{background:var(--berry);color:#fff}
+.claim:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.claim[disabled]{opacity:.5;cursor:wait}
+.taken{font-size:14px;font-weight:600;color:var(--mute)}
+.card.got .gbody{opacity:.55}
+.card.got .ribbon{background:var(--mute)}
+.stamp{align-self:flex-start;font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--pine);color:#fff}
+.card.mine .stamp{background:var(--berry)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.link{background:none;border:0;padding:0 4px;font:inherit;font-size:14px;color:var(--berry);text-decoration:underline;cursor:pointer;min-height:auto}
+.modal{position:fixed;inset:0;background:rgba(10,30,22,.55);display:grid;place-items:center;padding:16px;z-index:10;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal.open{opacity:1;pointer-events:auto}
+.modal form{background:var(--card);color:var(--ink);border-radius:20px;padding:26px;width:min(420px,100%);transform:translateY(14px) scale(.98);transition:transform .3s cubic-bezier(.2,.8,.2,1);box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
+.modal.open form{transform:none}
+.modal h3{font-size:28px;margin-bottom:8px}
+.modal p{margin:0 0 16px;color:var(--mute);font-size:15px}
+.modal input{width:100%;font:16px Outfit,sans-serif;min-height:48px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+.modal input:focus{outline:3px solid var(--gold);outline-offset:1px;border-color:transparent}
+.mrow{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.mrow button{font:500 15px Outfit,sans-serif;min-height:44px;padding:0 18px;border-radius:999px;cursor:pointer;border:1.5px solid var(--line);background:transparent;color:var(--ink)}
+.mrow button[type=submit]{background:var(--berry);border-color:var(--berry);color:#fff}
+#toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);opacity:0;background:#14231d;color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;transition:.3s;pointer-events:none;max-width:calc(100% - 32px);z-index:5}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.empty{grid-column:1/-1;text-align:center;color:var(--mute);padding:40px}
+.note{font-size:13px;color:var(--mute);margin:18px 0 0}
+
+/* good to know */
+.know{background:var(--berry);color:#fff}
+.know h2{font-size:clamp(32px,4vw,44px);margin-bottom:24px}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:18px}
+.kbox{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:20px}
+.kbox h3{font-size:22px;margin-bottom:10px}
+.kbox ul{margin:0;padding:0;list-style:none}
+.kbox li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.15)}
+.kbox li:last-child{border:0}
+.kbox li span:last-child{font-weight:600;text-align:right}
+footer{background:var(--pine);color:#d6e2db;text-align:center;font-size:15px}
+footer b{font-family:"Young Serif",serif;font-weight:400;font-size:22px;color:#fff;display:block;margin-bottom:4px}
+
+@media(max-width:700px){.hero .wrap{grid-template-columns:minmax(0,1fr)}.hero-text{padding-bottom:0}.scene{max-height:300px}}
+@media(prefers-reduced-motion:reduce){.gift{animation:none}.card{opacity:1;transform:none;transition:none}#snow{display:none}}
+</style>
+</head>
+<body>
+
+<header class="band hero">
+  <canvas id="snow" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="hero-text">
+      <div class="from">Christmas 2026</div>
+      <h1>Joseph's Christmas List</h1>
+      <p>Hi family! Here's everything I'd love this year. Nothing on here is a must — tap any gift to see where to find it.</p>
+      <div class="count" id="count" aria-label="Countdown to Christmas"></div>
+    </div>
+    <svg class="scene" viewBox="0 0 520 380" role="img" aria-label="A pile of wrapped presents">
+      <defs>
+        <linearGradient id="gR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d93a4b"/><stop offset="1" stop-color="#9c1c2c"/></linearGradient>
+        <linearGradient id="gW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbf8f1"/><stop offset="1" stop-color="#dcd5c6"/></linearGradient>
+        <linearGradient id="gG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a7357"/><stop offset="1" stop-color="#174f3c"/></linearGradient>
+        <linearGradient id="gY" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2cd6c"/><stop offset="1" stop-color="#c9952c"/></linearGradient>
+        <g id="bow"><path d="M0 0c-22-20-38-6-26 6 8 8 26-6 26-6zM0 0c22-20 38-6 26 6-8 8-26-6-26-6z" fill="#e2b54a" stroke="#b8862a" stroke-width="2"/><circle r="6" fill="#c9952c"/></g>
+      </defs>
+      <ellipse cx="260" cy="368" rx="250" ry="12" fill="#000" opacity=".22"/>
+      <!-- back left tall -->
+      <g class="gift"><rect x="40" y="140" width="130" height="230" rx="6" fill="url(#gG)"/><rect x="40" y="140" width="130" height="10" fill="#fff" opacity=".18"/>
+        <rect x="98" y="140" width="14" height="230" fill="#e2b54a"/><use href="#bow" x="105" y="140"/></g>
+      <!-- back right -->
+      <g class="gift"><rect x="330" y="170" width="150" height="200" rx="6" fill="url(#gW)"/><rect x="330" y="170" width="150" height="10" fill="#fff" opacity=".5"/>
+        <rect x="398" y="170" width="14" height="200" fill="#c4283a"/><rect x="330" y="255" width="150" height="14" fill="#c4283a"/>
+        <g transform="translate(405 170)"><path d="M0 0c-22-20-38-6-26 6 8 8 26-6 26-6zM0 0c22-20 38-6 26 6-8 8-26-6-26-6z" fill="#c4283a"/><circle r="6" fill="#9c1c2c"/></g></g>
+      <!-- middle big red -->
+      <g class="gift"><rect x="150" y="200" width="200" height="170" rx="6" fill="url(#gR)"/><rect x="150" y="200" width="200" height="10" fill="#fff" opacity=".2"/>
+        <rect x="243" y="200" width="16" height="170" fill="#e2b54a"/><rect x="150" y="276" width="200" height="16" fill="#e2b54a"/><use href="#bow" x="251" y="200"/>
+        <g fill="#fff" opacity=".25"><circle cx="180" cy="240" r="4"/><circle cx="320" cy="330" r="4"/><circle cx="200" cy="340" r="3"/><circle cx="305" cy="232" r="3"/></g></g>
+      <!-- front small gold -->
+      <g class="gift"><rect x="20" y="292" width="110" height="78" rx="5" fill="url(#gY)"/><rect x="68" y="292" width="12" height="78" fill="#0f3d2e"/>
+        <g transform="translate(74 292) scale(.7)"><path d="M0 0c-22-20-38-6-26 6 8 8 26-6 26-6zM0 0c22-20 38-6 26 6-8 8-26-6-26-6z" fill="#0f3d2e"/><circle r="6" fill="#0a2a20"/></g></g>
+      <!-- front small green -->
+      <g class="gift"><rect x="372" y="300" width="120" height="70" rx="5" fill="url(#gG)"/><rect x="372" y="328" width="120" height="12" fill="#f3efe6"/>
+        <rect x="426" y="300" width="12" height="70" fill="#f3efe6"/></g>
+    </svg>
+  </div>
+</header>
+
+<main class="band">
+  <div class="wrap">
+    <div class="bar">
+      <h2>Wish list</h2>
+      <select id="sort" aria-label="Sort gifts">
+        <option value="pri">Sort: most wanted first</option>
+        <option value="low">Sort: price, low to high</option>
+        <option value="high">Sort: price, high to low</option>
+      </select>
+    </div>
+    <div class="who" id="who" aria-live="polite"><div><span class="dot"></span><b>Checking who's here…</b></div></div>
+    <div class="chips" id="chips" role="group" aria-label="Filter by category" style="margin-bottom:22px"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<section class="band know">
+  <div class="wrap">
+    <h2>Good to know</h2>
+    <div class="kgrid" id="know"></div>
+  </div>
+</section>
+
+<div id="toast" role="status"></div>
+<div class="modal" id="namebox" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
+  <form id="nameForm">
+    <h3 id="nameTitle">What's your name?</h3>
+    <p>This is a shared list, so your name shows on anything you claim. That way nobody gets Joseph the same thing twice.</p>
+    <label for="nameIn" class="cat">Your name</label>
+    <input id="nameIn" autocomplete="given-name" maxlength="30" placeholder="e.g. Aunt Linda">
+    <div class="mrow"><button type="button" id="nameCancel">Cancel</button><button type="submit">Save</button></div>
+  </form>
+</div>
+<footer class="band">
+  <b>Merry Christmas</b>
+  See you on the 25th. — Made by Joseph
+</footer>
+
+<script>
+{
+// ====== EDIT YOUR LIST HERE ======
+// wrap important bits in **double stars** to make them bold
+// priority: "top" (really want), "would" (would love), "nice" (nice to have)
+const gifts = [
+  {store:"Apple", name:"Apple gift card", cat:"Gift cards", pri:"would", price:25, note:"A **$25** Apple gift card — works for the App Store, apps and more.", link:"https://www.apple.com/shop/gift-cards"},
+  {store:"Starbucks", name:"Starbucks gift card", cat:"Gift cards", pri:"would", price:25, priceText:"$25–50", note:"Any amount from **$25 to $50**, whatever works for you.", link:"https://www.starbucks.com/gift"},
+  {store:"American Eagle", name:"Snoopy flannel PJ pants", cat:"Clothes", pri:"would", price:26.97, note:"American Eagle, **charcoal**, **size Large**. On sale right now (usually $44.95).", link:"https://www.ae.com/us/en/p/men/loungewear-pjs/pajamas/aeo-snoopy-flannel-pj-pant/0239_2138_008"},
+  {store:"American Eagle", name:"Cozy Cabin graphic sweater", cat:"Clothes", pri:"would", price:52.46, note:"American Eagle, **soft oat**, **size 2XL**. On sale right now (usually $74.95).", link:"https://www.ae.com/us/en/p/men/tops/sweaters/ae-cozy-cabin-graphic-sweater/1142_2391_164"},
+  {store:"American Eagle", name:"Boxy fit layered t-shirt", cat:"Clothes", pri:"would", price:34.96, note:"American Eagle, **navy**, **size XL**. On sale right now (usually $49.95).", link:"https://www.ae.com/us/en/p/men/tops/t-shirts/ae-boxy-fit-layered-t-shirt/2171_5479_410"},
+  {store:"eBay", name:"Ty Classic 2009 Yodeler St. Bernard plush", cat:"Plush", pri:"would", price:23.99, note:"15\" floppy laying puppy on eBay, **used, good condition**. Plus **$13.65 shipping**. It's a one-off listing, so grab it before it's gone.", link:"https://www.ebay.com/itm/227500560285"},
+  {store:"Amazon", name:"Pepperidge Farm Gingerman cookies", cat:"Snacks", pri:"would", price:0, note:"The **ginger** gingerbread men cookies.", link:"https://www.amazon.com/dp/B0FBZ7YF7J?th=1"},
+  {store:"Hollister", name:"Relaxed cinch sweatpants (2 pairs)", cat:"Clothes", pri:"would", price:62.92, note:"Hollister, **dark heather gray**, **size Large**. That's **2 pairs** at $31.46 each, on sale right now (usually $44.95 each).", link:"https://www.hollisterco.com/shop/us/p/relaxed-cinch-sweatpants-63579319"},
+];
+// Supabase settings for the shared "who's buying what" list.
+// Leave url empty to turn claiming off.
+const SUPABASE = {
+  url: "https://gzwkgfhamhatvkxyvtfj.supabase.co",
+  key: "sb_publishable_MsrwjkmPTq3h9zvMESdF5Q_JHgscibn"
+};
+const info = [
+  {title:"Sizes", rows:[["Shirt","XL"],["Sweater","2XL"],["Pants","Large"]]},
+];
+// ==================================
+
+gifts.forEach(g=>g.id=g.id||g.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""));
+const priOrder={top:0,would:1,nice:2}, priLabel={top:"Really want",would:"Would love",nice:"Nice to have"};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const grid=document.getElementById('grid'), chips=document.getElementById('chips'), sortSel=document.getElementById('sort');
+let cat="All";
+const cats=["All",...new Set(gifts.map(g=>g.cat))];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function renderChips(){
+  chips.innerHTML=cats.map(c=>`<button class="chip" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+}
+const io=('IntersectionObserver' in window)?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12}):null;
+const bag='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5h10l-1 9H4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 7V4a2 2 0 0 1 4 0v3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+const arrow='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+let fs=false,me="",ready=false,claims={},busy=new Set(),painted=false,mineIds=new Set();
+const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+me=LS.get('xmas-name')||"";
+try{mineIds=new Set(JSON.parse(LS.get('xmas-mine')||'[]'))}catch(e){}
+const saveMine=()=>LS.set('xmas-mine',JSON.stringify([...mineIds]));
+function render(){
+  let list=gifts.filter(g=>cat==="All"||g.cat===cat);
+  const s=sortSel.value;
+  list.sort((a,b)=>s==="low"?a.price-b.price:s==="high"?b.price-a.price:priOrder[a.pri]-priOrder[b.pri]);
+  list.sort((a,b)=>(claims[a.id]?1:0)-(claims[b.id]?1:0));
+  grid.innerHTML=list.length?list.map((g,i)=>{
+    const c=claims[g.id], mine=c&&mineIds.has(g.id);
+    let act='';
+    if(c) act=mine?`<button class="claim" data-un="${g.id}" ${busy.has(g.id)?'disabled':''}>Undo</button>`:'';
+    else if(fs) act=`<button class="claim" data-claim="${g.id}" ${busy.has(g.id)?'disabled':''}>I'm getting this</button>`;
+    return `
+    <article class="card${painted?' in':''}${c?' got':''}${mine?' mine':''}" style="transition-delay:${reduce||painted?0:i*70}ms">
+      <span class="ribbon" aria-hidden="true"></span>
+      ${c?`<span class="stamp">${mine?"You're getting this":"Taken by "+esc(c.name||'someone')}</span>`:''}
+      <div class="gbody" style="display:flex;flex-direction:column;gap:10px">
+      <div class="tag"><span class="cat">${esc(g.cat)}</span><span class="pri ${g.pri}">${priLabel[g.pri]}</span></div>
+      ${g.store?`<span class="store">${bag}${esc(g.store)}</span>`:''}
+      <h3>${esc(g.name)}</h3>
+      <p>${esc(g.note).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</p>
+      </div>
+      <div class="meta"><span class="price">${g.priceText?esc(g.priceText):g.price?'$'+g.price:''}</span>
+        <div class="acts">${act}${g.link?`<a class="btn" href="${esc(g.link)}" target="_blank" rel="noopener">View ${arrow}</a>`:''}</div></div>
+    </article>`}).join(''):'<div class="empty">Nothing here yet.</div>';
+  if(!painted) grid.querySelectorAll('.card').forEach(c=>{if(io&&!reduce)io.observe(c);else c.classList.add('in')});
+  painted=true;
+  renderWho();
+}
+const whoEl=document.getElementById('who');
+const why="This is a shared list, so everyone puts in their name. That way we can all see who's buying what and nobody ends up getting the same thing twice.";
+function renderWho(){
+  if(!ready){whoEl.style.display='';whoEl.className='who';whoEl.innerHTML=`<div><span class="dot"></span><b>Loading the list…</b></div>`;return}
+  if(!fs){whoEl.style.display='none';return}
+  whoEl.style.display='';
+  const n=gifts.filter(g=>claims[g.id]).length;
+  const tally=`<span class="tally">${n} of ${gifts.length} gifts taken</span>`;
+  if(!me){whoEl.className='who off';whoEl.innerHTML=`<div><span class="dot"></span><b>Who's shopping?</b><p>${why}</p></div><button class="claim" data-name>Enter your name</button>`;return}
+  whoEl.className='who on';whoEl.innerHTML=`<div><span class="dot"></span><b>Hi, ${esc(me)}!</b> <button class="link" data-name>Not you?</button><p>${why} Tap “I'm getting this” on anything you buy.</p></div>${tally}`;
+}
+const toastEl=document.getElementById('toast');let tt;
+function toast(m){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>toastEl.classList.remove('show'),3200)}
+
+// name popup
+const dlg=document.getElementById('namebox'),nameIn=document.getElementById('nameIn');let afterName=null;
+function askName(then){afterName=then||null;nameIn.value=me;dlg.classList.add('open');setTimeout(()=>nameIn.focus(),50)}
+function closeName(){dlg.classList.remove('open');afterName=null}
+document.getElementById('nameForm').addEventListener('submit',e=>{
+  e.preventDefault();const v=nameIn.value.trim().slice(0,30);if(!v){nameIn.focus();return}
+  me=v;LS.set('xmas-name',v);const t=afterName;dlg.classList.remove('open');afterName=null;render();if(t)t();
+});
+document.getElementById('nameCancel').addEventListener('click',closeName);
+dlg.addEventListener('click',e=>{if(e.target===dlg)closeName()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dlg.classList.contains('open'))closeName()});
+whoEl.addEventListener('click',e=>{if(e.target.closest('[data-name]'))askName()});
+
+const api=(path,opt={})=>fetch(SUPABASE.url+'/rest/v1/'+path,{...opt,headers:{apikey:SUPABASE.key,'Content-Type':'application/json',...(opt.headers||{})}});
+async function refresh(){
+  try{
+    const r=await api('claims?select=gift_id,name');
+    if(!r.ok)throw 0;
+    const rows=await r.json();claims={};
+    rows.forEach(x=>{if(x&&typeof x.name==='string')claims[x.gift_id]={name:x.name}});
+    let changed=false;mineIds.forEach(id=>{if(!claims[id]){mineIds.delete(id);changed=true}});if(changed)saveMine();
+    fs=true;return true;
+  }catch(e){return false}
+}
+async function claim(id){
+  if(!me){askName(()=>claim(id));return}
+  busy.add(id);render();
+  try{
+    const r=await api('claims',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({gift_id:id,name:me})});
+    if(r.status===409){toast('Someone already got that one.')}
+    else if(!r.ok)throw 0;
+    else{mineIds.add(id);saveMine();toast("Got it — it's marked as yours.")}
+  }catch(e){toast("Couldn't save that. Try again in a sec.")}
+  finally{await refresh();busy.delete(id);render()}
+}
+async function unclaim(id){
+  busy.add(id);render();
+  try{const r=await api('claims?gift_id=eq.'+encodeURIComponent(id),{method:'DELETE'});if(!r.ok)throw 0;mineIds.delete(id);saveMine();toast('Unclaimed.')}
+  catch(e){toast("Couldn't undo that. Try again in a sec.")}
+  finally{await refresh();busy.delete(id);render()}
+}
+grid.addEventListener('click',e=>{
+  const a=e.target.closest('[data-claim]'),u=e.target.closest('[data-un]');
+  if(a&&!a.disabled)claim(a.dataset.claim);
+  if(u&&!u.disabled)unclaim(u.dataset.un);
+});
+(async()=>{
+  if(SUPABASE.url){
+    const ok=await refresh();
+    if(!ok)setTimeout(()=>toast("Can't reach the shared list right now."),400);
+  }
+  ready=true;render();
+  if(!SUPABASE.url)return;
+  setInterval(async()=>{if(document.visibilityState==='visible'&&!busy.size){await refresh();render()}},8000);
+  document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'){await refresh();render()}});
+})();
+chips.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;cat=b.dataset.c;renderChips();render()});
+sortSel.addEventListener('change',render);
+renderChips();render();
+
+document.getElementById('know').innerHTML=info.map(k=>`<div class="kbox"><h3>${esc(k.title)}</h3><ul>${k.rows.map(r=>`<li><span>${esc(r[0])}</span><span>${esc(r[1])}</span></li>`).join('')}</ul></div>`).join('');
+
+// countdown
+const countEl=document.getElementById('count');
+function tick(){
+  const now=new Date();let xmas=new Date(now.getFullYear(),11,25);
+  if(now>new Date(now.getFullYear(),11,26))xmas=new Date(now.getFullYear()+1,11,25);
+  let d=Math.max(0,xmas-now);
+  if(d===0){countEl.innerHTML='<div><b>Today!</b><span>Merry Christmas</span></div>';return}
+  const u=[["days",864e5],["hours",36e5],["min",6e4],["sec",1e3]].map(([l,ms])=>{const v=Math.floor(d/ms);d-=v*ms;return[l,v]});
+  countEl.innerHTML=u.map(([l,v])=>`<div><b>${String(v).padStart(2,'0')}</b><span>${l}</span></div>`).join('');
+}
+tick();setInterval(tick,1000);
+
+// snow
+const cv=document.getElementById('snow'),ctx=cv.getContext&&cv.getContext('2d');
+if(ctx&&!reduce){
+  let W,H,flakes=[];
+  const size=()=>{const r=devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*r;cv.height=H*r;ctx.setTransform(r,0,0,r,0,0);
+    flakes=Array.from({length:Math.round(W/9)},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2.2+.8,s:Math.random()*.6+.3,d:Math.random()*Math.PI*2}))};
+  size();new ResizeObserver(size).observe(cv);
+  (function loop(){
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='rgba(255,255,255,.85)';
+    for(const f of flakes){f.y+=f.s;f.d+=.01;f.x+=Math.sin(f.d)*.4;if(f.y>H+4){f.y=-4;f.x=Math.random()*W}
+      ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill()}
+    requestAnimationFrame(loop)})();
+}
+}
+</script>
+</body>
+</html>
