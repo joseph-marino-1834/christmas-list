@@ -90,6 +90,8 @@ select{font-size:16px;padding-right:12px}
 .claim[disabled]{opacity:.5;cursor:wait}
 .left{margin-left:8px;padding:2px 8px;border-radius:999px;background:light-dark(#e3efe8,#1d4a39);color:light-dark(#1d5a41,#bfe0cf);font-weight:600;white-space:nowrap}
 .warn{display:flex;gap:10px;align-items:flex-start;background:#fff4d6;color:#5c3d00;border:2px solid #f0b429;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.4}
+.modal .warn{margin-bottom:4px}
+.mrow .btn{min-height:44px}
 .warn svg{flex:none;color:#e08a00;margin-top:1px}
 .warn strong{display:block;font-size:16px;color:#7a4b00}
 .warn b{color:#3d2700}
@@ -297,6 +299,13 @@ html{scroll-padding-top:76px;scroll-behavior:smooth}
 </section>
 
 <div id="toast" role="status"></div>
+<div class="modal" id="warnbox" role="dialog" aria-modal="true" aria-labelledby="warnTitle">
+  <form id="warnForm">
+    <h3 id="warnTitle">Before you buy</h3>
+    <div class="warn" role="note"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z" fill="currentColor"/><path d="M12 10v5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="18" r="1.4" fill="#fff"/></svg><span><strong>Heads up!</strong> <span id="warnText"></span></span></div>
+    <div class="mrow"><button type="button" id="warnCancel">Cancel</button><a class="btn" id="warnGo" href="#" target="_blank" rel="noopener">Got it, open the link</a></div>
+  </form>
+</div>
 <div class="dr-bg" id="setBg"></div>
 <aside class="drawer" id="settings" role="dialog" aria-modal="true" aria-labelledby="setTitle">
   <div class="dr-head"><h3 id="setTitle">Settings</h3><button class="x" id="closeSettings" aria-label="Close settings"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button></div>
@@ -405,10 +414,9 @@ function render(){
       ${g.store?`<span class="store">${bag}${esc(g.store)}</span>`:''}
       <h3>${esc(g.name)}</h3>
       <p>${esc(g.note).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</p>
-      ${g.warn?`<div class="warn" role="note"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z" fill="currentColor"/><path d="M12 10v5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="18" r="1.4" fill="#fff"/></svg><span><strong>Heads up!</strong> ${esc(g.warn).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</span></div>`:''}
       </div>
       <div class="meta"><span class="price">${g.priceText?esc(g.priceText):g.price?'$'+g.price:''}</span>
-        <div class="acts">${act}${g.link?`<a class="btn" href="${esc(g.link)}" target="_blank" rel="noopener">View ${arrow}</a>`:''}</div></div>
+        <div class="acts">${act}${g.link?`<a class="btn" href="${esc(g.link)}" target="_blank" rel="noopener"${g.warn?` data-warn="${g.id}"`:''}>View ${arrow}</a>`:''}</div></div>
     </article>`}).join(''):'<div class="empty">Nothing here yet.</div>';
   if(!painted) grid.querySelectorAll('.card').forEach(c=>{if(io&&!reduce)io.observe(c);else c.classList.add('in')});
   painted=true;
@@ -441,6 +449,20 @@ document.getElementById('nameCancel').addEventListener('click',closeName);
 dlg.addEventListener('click',e=>{if(e.target===dlg)closeName()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dlg.classList.contains('open'))closeName()});
 whoEl.addEventListener('click',e=>{if(e.target.closest('[data-name]'))askName()});
+// heads-up before opening a link
+const wb=document.getElementById('warnbox'),wGo=document.getElementById('warnGo');
+grid.addEventListener('click',e=>{
+  const a=e.target.closest('a[data-warn]');if(!a)return;
+  const g=gifts.find(x=>x.id===a.dataset.warn);if(!g)return;
+  e.preventDefault();
+  document.getElementById('warnText').innerHTML=esc(g.warn).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  wGo.href=g.link;wb.classList.add('open');setTimeout(()=>wGo.focus(),50);
+});
+const closeWarn=()=>wb.classList.remove('open');
+document.getElementById('warnCancel').addEventListener('click',closeWarn);
+wGo.addEventListener('click',()=>setTimeout(closeWarn,100));
+wb.addEventListener('click',e=>{if(e.target===wb)closeWarn()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&wb.classList.contains('open'))closeWarn()});
 // top bar + settings
 const tb=document.getElementById('topbar');
 addEventListener('scroll',()=>tb.classList.toggle('scrolled',scrollY>8),{passive:true});
