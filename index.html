@@ -335,6 +335,584 @@ const gifts = [
   {store:"American Eagle", name:"Boxy fit layered t-shirt", cat:"Clothes", pri:"top", price:34.96, note:"American Eagle, **navy**, **size XL**. On sale right now (usually $49.95).", link:"https://www.ae.com/us/en/p/men/tops/t-shirts/ae-boxy-fit-layered-t-shirt/2171_5479_410"},
   {store:"American Eagle", name:"Peanuts crew socks 3-pack", cat:"Clothes", pri:"would", price:19.95, note:"American Eagle, **white**, **one size**. Three pairs of Peanuts crew socks.", link:"https://www.ae.com/us/en/p/men/accessories-socks/socks/ae-peanuts-crew-socks-3-pack/0225_8239_100"},
   {store:"American Eagle", name:"Touchpoint gloves", cat:"Clothes", pri:"would", price:13.96, note:"American Eagle, **charcoal heather gray**, **one size**. Touchscreen-friendly so I can still use my phone. On sale right now (usually $19.95).", link:"https://www.ae.com/us/en/p/men/accessories-socks/cold-weather-accessories/ae-touchpoint-gloves/0226_9245_029"},
+  {store:"eBay", name:"Ty Classic 2009 St. Bernard plush", cat:"Plush", pri:"top", price:15.99, note:"14\" \"Yodeler\" St. Bernard on eBay, **used**, still has its Ty heart tag. Plus **$8.08 shipping**, 30-day returns. It's a one-off listing, so grab it before it's gone.", link:"https://www.ebay.com/itm/257413910125"},
+  {store:"Amazon", name:"Pepperidge Farm Gingerman cookies", cat:"Snacks", pri:"would", price:0, note:"The **ginger** gingerbread men cookies.", link:"https://www.amazon.com/dp/B0FBZ7YF7J?th=1"},
+  {store:"Amazon", name:"Cheese squishy stress ball", cat:"Toys", pri:"would", price:12.69, note:"The squishy cheese stress ball on Amazon. **Black Friday deal** right now (usually $16.99).", link:"https://www.amazon.com/dp/B0GY83Y33Y?th=1"},
+  {store:"Hollister", name:"Relaxed cinch sweatpants (2 pairs)", cat:"Clothes", pri:"top", price:62.92, note:"Hollister, **dark heather gray**, **size Large**. That's **2 pairs** at $31.46 each, on sale right now (usually $44.95 each).", warn:"Make sure the color is **Dark Heather Gray** and the quantity is set to **2**.", link:"https://www.hollisterco.com/shop/us/p/relaxed-cinch-sweatpants-63579319"},
+];
+// Supabase settings for the shared "who's buying what" list.
+// Leave url empty to turn claiming off.
+const SUPABASE = {
+  url: "https://gzwkgfhamhatvkxyvtfj.supabase.co",
+  key: "sb_publishable_MsrwjkmPTq3h9zvMESdF5Q_JHgscibn"
+};
+const info = [
+  {title:"Sizes", rows:[["Shirt","XL"],["Sweater","2XL"],["Pants","Large"]]},
+];
+// ==================================
+
+gifts.forEach(g=>g.id=g.id||g.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""));
+const priOrder={top:0,would:1,nice:2,stock:3}, priLabel={top:"Really want",would:"Would love",nice:"Nice to have",stock:"Stocking stuffer"};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const grid=document.getElementById('grid'), chips=document.getElementById('chips'), sortSel=document.getElementById('sort');
+let cat="All";
+const cats=["All",...new Set(gifts.map(g=>g.cat))];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function renderChips(){
+  chips.innerHTML=cats.map(c=>`<button class="chip" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+}
+const io=('IntersectionObserver' in window)?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12}):null;
+const bag='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5h10l-1 9H4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 7V4a2 2 0 0 1 4 0v3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+const arrow='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+let fs=false,me="",ready=false,claims={},busy=new Set(),painted=false,mineIds=new Set();
+const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+me=LS.get('xmas-name')||"";
+try{mineIds=new Set(JSON.parse(LS.get('xmas-mine')||'[]'))}catch(e){}
+const qtyOf=g=>g.qty==='any'?Infinity:Math.max(1,g.qty||1);
+const gotSlots=g=>Object.keys(claims).filter(k=>k===g.id||k.startsWith(g.id+'~'));
+const slots=g=>Array.from({length:qtyOf(g)},(_,i)=>i?g.id+'~'+(i+1):g.id);
+const isFull=g=>gotSlots(g).length>=qtyOf(g);
+const SET_DEF={theme:'auto',snow:'1',hideTaken:false};
+let settings={...SET_DEF};try{Object.assign(settings,JSON.parse(LS.get('xmas-settings')||'{}'))}catch(e){}
+const saveSet=()=>LS.set('xmas-settings',JSON.stringify(settings));
+let applySnow=()=>{};
+function applyTheme(){const r=document.documentElement;if(settings.theme==='light'||settings.theme==='dark')r.dataset.theme=settings.theme;else delete r.dataset.theme}
+applyTheme();
+const saveMine=()=>LS.set('xmas-mine',JSON.stringify([...mineIds]));
+function render(){
+  let list=gifts.filter(g=>cat==="All"||g.cat===cat);
+  if(settings.hideTaken)list=list.filter(g=>!isFull(g));
+  const s=sortSel.value;
+  list.sort((a,b)=>s==="low"?a.price-b.price:s==="high"?b.price-a.price:priOrder[a.pri]-priOrder[b.pri]);
+  list.sort((a,b)=>(isFull(a)?1:0)-(isFull(b)?1:0));
+  grid.innerHTML=list.length?list.map((g,i)=>{
+    const q=qtyOf(g), got=gotSlots(g), mySlot=got.find(k=>mineIds.has(k)), mine=!!mySlot, full=got.length>=q, c=got.length>0;
+    const others=got.filter(k=>k!==mySlot).map(k=>esc(claims[k].name||'someone'));
+    let act='';
+    if(mine) act=`<button class="claim" data-un="${mySlot}" ${busy.has(g.id)?'disabled':''}>Undo</button>`;
+    else if(fs&&!full) act=`<button class="claim" data-claim="${g.id}" ${busy.has(g.id)?'disabled':''}>I'm getting this</button>`;
+    let stamp='';
+    if(c){const who=(mine?['You']:[]).concat(others);stamp=q>1?`${who.join(' & ')} ${who.length===1&&!mine?'is':'are'} getting one`:(mine?"You're getting this":"Taken by "+others[0]);}
+    if(mine&&q===1)stamp="You're getting this";
+    const left=q===Infinity?`<span class="left">No limit</span>`:q>1?`<span class="left">${q-got.length} of ${q} left</span>`:'';
+    return `
+    <article class="card${painted?' in':''}${full?' got':''}${mine?' mine':''}" style="transition-delay:${reduce||painted?0:i*70}ms">
+      <span class="ribbon" aria-hidden="true"></span>
+      ${c?`<span class="stamp">${stamp}</span>`:''}
+      <div class="gbody" style="display:flex;flex-direction:column;gap:10px">
+      <div class="tag"><span class="cat">${esc(g.cat)}${left}</span><span class="pri ${g.pri}">${priLabel[g.pri]}</span></div>
+      ${g.store?`<span class="store">${bag}${esc(g.store)}</span>`:''}
+      <h3>${esc(g.name)}</h3>
+      <p>${esc(g.note).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</p>
+      ${g.warn?`<div class="warn" role="note"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z" fill="currentColor"/><path d="M12 10v5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="18" r="1.4" fill="#fff"/></svg><span><strong>Heads up!</strong> ${esc(g.warn).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</span></div>`:''}
+      </div>
+      <div class="meta"><span class="price">${g.priceText?esc(g.priceText):g.price?'$'+g.price:''}</span>
+        <div class="acts">${act}${g.link?`<a class="btn" href="${esc(g.link)}" target="_blank" rel="noopener">View ${arrow}</a>`:''}</div></div>
+    </article>`}).join(''):'<div class="empty">Nothing here yet.</div>';
+  if(!painted) grid.querySelectorAll('.card').forEach(c=>{if(io&&!reduce)io.observe(c);else c.classList.add('in')});
+  painted=true;
+  const tc=document.getElementById('tbCount');if(tc)tc.textContent=fs?`${gifts.filter(isFull).length} of ${gifts.length} taken`:'';
+  renderWho();
+}
+const whoEl=document.getElementById('who');
+const why="This is a shared list, so everyone puts in their name. That way we can all see who's buying what and nobody ends up getting the same thing twice.";
+function renderWho(){
+  if(!ready){whoEl.style.display='';whoEl.className='who';whoEl.innerHTML=`<div><span class="dot"></span><b>Loading the list…</b></div>`;return}
+  if(!fs){whoEl.style.display='none';return}
+  whoEl.style.display='';
+  const n=gifts.filter(isFull).length;
+  const tally=`<span class="tally">${n} of ${gifts.length} gifts taken</span>`;
+  if(!me){whoEl.className='who off';whoEl.innerHTML=`<div><span class="dot"></span><b>Who's shopping?</b><p>${why}</p></div><button class="claim" data-name>Enter your name</button>`;return}
+  whoEl.className='who on';whoEl.innerHTML=`<div><span class="dot"></span><b>Hi, ${esc(me)}!</b> <button class="link" data-name>Not you?</button><p>${why} Tap “I'm getting this” on anything you buy.</p></div>${tally}`;
+}
+const toastEl=document.getElementById('toast');let tt;
+function toast(m){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>toastEl.classList.remove('show'),3200)}
+
+// name popup
+const dlg=document.getElementById('namebox'),nameIn=document.getElementById('nameIn');let afterName=null;
+function askName(then){afterName=then||null;nameIn.value=me;dlg.classList.add('open');setTimeout(()=>nameIn.focus(),50)}
+function closeName(){dlg.classList.remove('open');afterName=null}
+document.getElementById('nameForm').addEventListener('submit',e=>{
+  e.preventDefault();const v=nameIn.value.trim().slice(0,30);if(!v){nameIn.focus();return}
+  me=v;LS.set('xmas-name',v);const t=afterName;dlg.classList.remove('open');afterName=null;render();if(t)t();
+});
+document.getElementById('nameCancel').addEventListener('click',closeName);
+dlg.addEventListener('click',e=>{if(e.target===dlg)closeName()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dlg.classList.contains('open'))closeName()});
+whoEl.addEventListener('click',e=>{if(e.target.closest('[data-name]'))askName()});
+// top bar + settings
+const tb=document.getElementById('topbar');
+addEventListener('scroll',()=>tb.classList.toggle('scrolled',scrollY>8),{passive:true});
+const dr=document.getElementById('settings'),drBg=document.getElementById('setBg'),hideEl=document.getElementById('hideTaken'),nameEl=document.getElementById('setName'),openBtn=document.getElementById('openSettings'),closeBtn=document.getElementById('closeSettings');
+function syncSet(){
+  dr.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===String(settings[sg.dataset.k])))));
+  hideEl.checked=!!settings.hideTaken;nameEl.value=me;
+}
+function openSet(){syncSet();dr.classList.add('open');drBg.classList.add('open');setTimeout(()=>closeBtn.focus(),60)}
+function closeSet(){dr.classList.remove('open');drBg.classList.remove('open');openBtn.focus()}
+openBtn.addEventListener('click',openSet);closeBtn.addEventListener('click',closeSet);drBg.addEventListener('click',closeSet);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dr.classList.contains('open'))closeSet()});
+dr.querySelectorAll('.seg').forEach(sg=>sg.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  settings[sg.dataset.k]=b.dataset.v;saveSet();syncSet();
+  if(sg.dataset.k==='theme')applyTheme();
+  if(sg.dataset.k==='snow')applySnow();
+}));
+hideEl.addEventListener('change',()=>{settings.hideTaken=hideEl.checked;saveSet();render()});
+document.getElementById('saveName').addEventListener('click',()=>{
+  const v=nameEl.value.trim().slice(0,30);me=v;LS.set('xmas-name',v);render();toast(v?`Saved — you're ${v}.`:'Name cleared.');
+});
+nameEl.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('saveName').click()});
+
+
+const api=(path,opt={})=>fetch(SUPABASE.url+'/rest/v1/'+path,{...opt,headers:{apikey:SUPABASE.key,'Content-Type':'application/json',...(opt.headers||{})}});
+async function refresh(){
+  try{
+    const r=await api('claims?select=gift_id,name');
+    if(!r.ok)throw 0;
+    const rows=await r.json();claims={};
+    rows.forEach(x=>{if(x&&typeof x.name==='string')claims[x.gift_id]={name:x.name}});
+    let changed=false;mineIds.forEach(id=>{if(!claims[id]){mineIds.delete(id);changed=true}});if(changed)saveMine();
+    fs=true;return true;
+  }catch(e){return false}
+}
+async function claim(id){
+  if(!me){askName(()=>claim(id));return}
+  const g=gifts.find(x=>x.id===id);if(!g)return;
+  busy.add(id);render();
+  try{
+    let done=false;
+    const tries=qtyOf(g)===Infinity?[g.id+'~'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)]:slots(g);
+    for(const k of tries){
+      if(claims[k])continue;
+      const r=await api('claims',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({gift_id:k,name:me})});
+      if(r.status===409)continue;
+      if(!r.ok)throw 0;
+      mineIds.add(k);saveMine();done=true;toast("Got it — it's marked as yours.");break;
+    }
+    if(!done)toast('Someone already got that one.');
+  }catch(e){toast("Couldn't save that. Try again in a sec.")}
+  finally{await refresh();busy.delete(id);render()}
+}
+async function unclaim(id){
+  const gid=id.split('~')[0];
+  busy.add(gid);render();
+  try{const r=await api('claims?gift_id=eq.'+encodeURIComponent(id),{method:'DELETE'});if(!r.ok)throw 0;mineIds.delete(id);saveMine();toast('Unclaimed.')}
+  catch(e){toast("Couldn't undo that. Try again in a sec.")}
+  finally{await refresh();busy.delete(gid);render()}
+}
+grid.addEventListener('click',e=>{
+  const a=e.target.closest('[data-claim]'),u=e.target.closest('[data-un]');
+  if(a&&!a.disabled)claim(a.dataset.claim);
+  if(u&&!u.disabled)unclaim(u.dataset.un);
+});
+(async()=>{
+  if(SUPABASE.url){
+    const ok=await refresh();
+    if(!ok)setTimeout(()=>toast("Can't reach the shared list right now."),400);
+  }
+  ready=true;render();
+  if(!SUPABASE.url)return;
+  setInterval(async()=>{if(document.visibilityState==='visible'&&!busy.size){await refresh();render()}},8000);
+  document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'){await refresh();render()}});
+})();
+chips.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;cat=b.dataset.c;renderChips();render()});
+sortSel.addEventListener('change',render);
+renderChips();render();
+
+document.getElementById('know').innerHTML=info.map(k=>`<div class="kbox"><h3>${esc(k.title)}</h3><ul>${k.rows.map(r=>`<li><span>${esc(r[0])}</span><span>${esc(r[1])}</span></li>`).join('')}</ul></div>`).join('');
+
+// countdown
+const countEl=document.getElementById('count');
+function tick(){
+  const now=new Date();let xmas=new Date(now.getFullYear(),11,25);
+  if(now>new Date(now.getFullYear(),11,26))xmas=new Date(now.getFullYear()+1,11,25);
+  let d=Math.max(0,xmas-now);
+  if(d===0){countEl.innerHTML='<div><b>Today!</b><span>Merry Christmas</span></div>';return}
+  const u=[["days",864e5],["hours",36e5],["min",6e4],["sec",1e3]].map(([l,ms])=>{const v=Math.floor(d/ms);d-=v*ms;return[l,v]});
+  countEl.innerHTML=u.map(([l,v])=>`<div><b>${String(v).padStart(2,'0')}</b><span>${l}</span></div>`).join('');
+}
+tick();setInterval(tick,1000);
+
+// presents: squish on click
+document.querySelectorAll('#scene .gift').forEach(g=>g.addEventListener('click',()=>{g.classList.remove('wob');g.style.animationDelay='0s';void g.getBBox();g.classList.add('wob')}));
+
+// snow
+const cv=document.getElementById('snow'),ctx=cv.getContext&&cv.getContext('2d');
+if(ctx&&!reduce){
+  let W,H,flakes=[],mx=-999,my=-999,t=0;
+  const hero=cv.parentElement;
+  const make=(top)=>{const z=Math.random()**1.6;const crystal=Math.random()<.07;return{x:Math.random()*W,y:top?-10:Math.random()*H,z,r:crystal?5+z*7:.6+z*3.4,crystal,a:Math.random()*6.28,spin:(Math.random()-.5)*.03,ph:Math.random()*6.28,vx:0,vy:0}};
+  const size=()=>{const pr=devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*pr;cv.height=H*pr;ctx.setTransform(pr,0,0,pr,0,0);flakes=Array.from({length:Math.round(W*H/5200*(+settings.snow||0))},()=>make(false))};
+  size();new ResizeObserver(size).observe(cv);
+  applySnow=()=>{cv.style.display=+settings.snow?'':'none';size()};applySnow();
+  hero.addEventListener('pointermove',e=>{const b=cv.getBoundingClientRect();mx=e.clientX-b.left;my=e.clientY-b.top});
+  hero.addEventListener('pointerleave',()=>{mx=my=-999});
+  const star=(f,al)=>{ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.a);ctx.strokeStyle=`rgba(255,255,255,${al})`;ctx.lineWidth=1.2;ctx.lineCap='round';ctx.beginPath();
+    for(let i=0;i<6;i++){ctx.rotate(Math.PI/3);ctx.moveTo(0,0);ctx.lineTo(0,-f.r);ctx.moveTo(0,-f.r*.55);ctx.lineTo(f.r*.28,-f.r*.78);ctx.moveTo(0,-f.r*.55);ctx.lineTo(-f.r*.28,-f.r*.78)}
+    ctx.stroke();ctx.restore()};
+  (function loop(){
+    if(!+settings.snow){requestAnimationFrame(loop);return}
+    t+=1;const wind=Math.sin(t*.004)*.5+Math.sin(t*.0013)*.7;
+    ctx.clearRect(0,0,W,H);
+    for(const f of flakes){
+      const sp=.25+f.z*1.1;
+      f.ph+=.012;
+      const dx=f.x-mx,dy=f.y-my,dd=dx*dx+dy*dy;
+      if(dd<8100){const m=(1-Math.sqrt(dd)/90)*.9;f.vx+=dx/90*m;f.vy+=dy/90*m}
+      f.vx*=.93;f.vy*=.93;
+      f.x+=wind*sp+Math.sin(f.ph)*.35*(.4+f.z)+f.vx;f.y+=sp+f.vy;f.a+=f.spin;
+      if(f.y>H+12)Object.assign(f,make(true));
+      if(f.x>W+12)f.x=-12;else if(f.x<-12)f.x=W+12;
+      const al=(.35+f.z*.6)*(.75+.25*Math.sin(f.ph*2.3));
+      if(f.crystal){star(f,al);continue}
+      if(f.z>.75){const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r*1.8);g.addColorStop(0,`rgba(255,255,255,${al})`);g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(f.x,f.y,f.r*1.8,0,6.283);ctx.fill()}
+      else{ctx.fillStyle=`rgba(255,255,255,${al})`;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,6.283);ctx.fill()}
+    }
+    requestAnimationFrame(loop)})();
+}
+}
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joseph's Christmas List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: warm, cozy, a little playful — a note to family, not a store
+   IDEA: a stack of wrapped presents under the tree, each wish a gift tag
+   PICTURE: an SVG pile of wrapped gifts with ribbons under falling snow
+   COLOUR and TYPE: pine green field, berry red, gold ribbon; Young Serif + Outfit
+   LAYOUT: hero scene + countdown, then filterable gift-tag cards, then "good to know" */
+:root{color-scheme:light dark;
+  --bg:light-dark(#f7f5f0,#0c2a20);--ink:light-dark(#14231d,#f3efe6);
+  --pine:#0f3d2e;--pine2:#174f3c;--berry:#c4283a;--berry2:#9c1c2c;--gold:#e2b54a;
+  --card:light-dark(#ffffff,#123628);--line:light-dark(#e3ddd0,#1f4a39);--mute:light-dark(#5b6a63,#b5c4bc)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Outfit,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Young Serif",Georgia,serif;font-weight:400;line-height:1.05;text-wrap:balance;margin:0}
+a{color:inherit}
+.band{padding:clamp(28px,4vw,64px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+
+/* hero */
+.hero{position:relative;background:var(--pine);color:#f3efe6;overflow:hidden;padding-bottom:0}
+#snow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(20px,4vw,56px);align-items:end}
+.hero-text{padding-bottom:clamp(28px,4vw,64px)}
+.hero h1{font-size:clamp(40px,6vw,64px);margin:.2em 0 .35em}
+.hero p{max-width:46ch;color:#d6e2db;font-size:17px;margin:0 0 24px}
+.from{font-size:15px;color:var(--gold);font-weight:500}
+.count{display:flex;gap:10px;flex-wrap:wrap}
+.count div{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 14px;min-width:78px;text-align:center}
+.count b{display:block;font:400 30px/1 "Young Serif",serif;font-variant-numeric:tabular-nums}
+.count span{font-size:13px;color:#b5c4bc}
+.scene{width:100%;height:auto;display:block;max-height:440px}
+.gift{transform-box:fill-box;transform-origin:50% 100%;animation:drop .9s cubic-bezier(.2,.9,.3,1.3) both}
+.gift:nth-of-type(2){animation-delay:.12s}.gift:nth-of-type(3){animation-delay:.24s}.gift:nth-of-type(4){animation-delay:.36s}.gift:nth-of-type(5){animation-delay:.48s}
+@keyframes drop{from{transform:translateY(-60px) scale(.9);opacity:0}to{transform:none;opacity:1}}
+
+/* toolbar */
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:0 0 24px}
+.bar h2{font-size:clamp(32px,4vw,44px)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip,select{font:500 15px Outfit,sans-serif;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.chip[aria-pressed=true]{background:var(--berry);border-color:var(--berry);color:#fff}
+select{font-size:16px;padding-right:12px}
+.chip:focus-visible,select:focus-visible,.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* gift cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:18px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 20px 20px;display:flex;flex-direction:column;gap:10px;
+  opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.card.in{opacity:1;transform:none}
+.card:hover{box-shadow:0 14px 34px -18px rgba(15,61,46,.55);transform:translateY(-3px)}
+.tag{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cat{font-size:13px;color:var(--mute)}
+.pri{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pri.top{background:var(--berry);color:#fff}
+.pri.would{background:light-dark(#fbefd0,#3b3418);color:light-dark(#7a5a10,#f0d488)}
+.pri.stock{background:light-dark(#fde2e4,#4a1d24);color:light-dark(#a3162a,#ffb3bc)}
+.pri.nice{background:light-dark(#e3efe8,#1d4a39);color:light-dark(#1d5a41,#bfe0cf)}
+.store{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--berry)}
+:root[data-theme=dark] .store{color:var(--gold)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .store{color:var(--gold)}}
+.card h3{font-size:22px}
+.card p{margin:0;color:var(--mute);font-size:15px}
+.card p b{color:var(--ink);font-weight:600}
+.meta{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.price{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border-radius:999px;background:var(--pine);color:#fff;text-decoration:none;font-weight:500;font-size:15px;transition:background .2s}
+:root[data-theme=dark] .btn{background:var(--gold);color:#14231d}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .btn{background:var(--gold);color:#14231d}}
+.btn:hover{background:var(--berry)}
+.btn svg{transition:transform .2s}.btn:hover svg{transform:translateX(3px)}
+.ribbon{position:absolute;top:-1px;left:22px;width:10px;height:26px;background:var(--gold);border-radius:0 0 3px 3px}
+.who{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 20px;margin:0 0 22px}
+.who b{font-weight:600}
+.who p{margin:4px 0 0;color:var(--mute);font-size:15px;max-width:62ch}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--gold);margin-right:8px;vertical-align:middle}
+.who.on .dot{background:#2f9e6a}.who.off .dot{background:var(--berry)}
+.tally{font-size:15px;font-weight:600;white-space:nowrap}
+.claim{font:500 15px Outfit,sans-serif;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--berry);background:transparent;color:var(--berry);cursor:pointer;transition:background .2s,color .2s}
+.claim:hover{background:var(--berry);color:#fff}
+.claim:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.claim[disabled]{opacity:.5;cursor:wait}
+.left{margin-left:8px;padding:2px 8px;border-radius:999px;background:light-dark(#e3efe8,#1d4a39);color:light-dark(#1d5a41,#bfe0cf);font-weight:600;white-space:nowrap}
+.warn{display:flex;gap:10px;align-items:flex-start;background:#fff4d6;color:#5c3d00;border:2px solid #f0b429;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.4}
+.warn svg{flex:none;color:#e08a00;margin-top:1px}
+.warn strong{display:block;font-size:16px;color:#7a4b00}
+.warn b{color:#3d2700}
+.taken{font-size:14px;font-weight:600;color:var(--mute)}
+.card.got .gbody{opacity:.55}
+.card.got .ribbon{background:var(--mute)}
+.stamp{align-self:flex-start;font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--pine);color:#fff}
+.card.mine .stamp{background:var(--berry)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.link{background:none;border:0;padding:0 4px;font:inherit;font-size:14px;color:var(--berry);text-decoration:underline;cursor:pointer;min-height:auto}
+.modal{position:fixed;inset:0;background:rgba(10,30,22,.55);display:grid;place-items:center;padding:16px;z-index:10;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal.open{opacity:1;pointer-events:auto}
+.modal form{background:var(--card);color:var(--ink);border-radius:20px;padding:26px;width:min(420px,100%);transform:translateY(14px) scale(.98);transition:transform .3s cubic-bezier(.2,.8,.2,1);box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
+.modal.open form{transform:none}
+.modal h3{font-size:28px;margin-bottom:8px}
+.modal p{margin:0 0 16px;color:var(--mute);font-size:15px}
+.modal input{width:100%;font:16px Outfit,sans-serif;min-height:48px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+.modal input:focus{outline:3px solid var(--gold);outline-offset:1px;border-color:transparent}
+.mrow{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.mrow button{font:500 15px Outfit,sans-serif;min-height:44px;padding:0 18px;border-radius:999px;cursor:pointer;border:1.5px solid var(--line);background:transparent;color:var(--ink)}
+.mrow button[type=submit]{background:var(--berry);border-color:var(--berry);color:#fff}
+#toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);opacity:0;background:#14231d;color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;transition:.3s;pointer-events:none;max-width:calc(100% - 32px);z-index:5}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.empty{grid-column:1/-1;text-align:center;color:var(--mute);padding:40px}
+.note{font-size:13px;color:var(--mute);margin:18px 0 0}
+
+/* good to know */
+.know{background:var(--berry);color:#fff}
+.know h2{font-size:clamp(32px,4vw,44px);margin-bottom:24px}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:18px}
+.kbox{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:20px}
+.kbox h3{font-size:22px;margin-bottom:10px}
+.kbox ul{margin:0;padding:0;list-style:none}
+.kbox li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.15)}
+.kbox li:last-child{border:0}
+.kbox li span:last-child{font-weight:600;text-align:right}
+footer{background:var(--pine);color:#d6e2db;text-align:center;font-size:15px}
+footer b{font-family:"Young Serif",serif;font-weight:400;font-size:22px;color:#fff;display:block;margin-bottom:4px}
+
+.hero .wrap{padding-bottom:clamp(14px,2.6vw,34px)}
+.drift{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:clamp(28px,5vw,64px);display:block;pointer-events:none}
+.gift{cursor:pointer}
+.gift.wob{animation:wob .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes wob{0%{transform:scale(1)}30%{transform:scale(1.08,.92)}60%{transform:scale(.96,1.05)}100%{transform:scale(1)}}
+html{scroll-padding-top:76px;scroll-behavior:smooth}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(12,48,36,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#f3efe6;border-bottom:1px solid rgba(255,255,255,.08);transition:box-shadow .3s}
+.topbar.scrolled{box-shadow:0 10px 28px -14px rgba(0,0,0,.6)}
+.tb-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:10px max(5vw,16px)}
+.brand{display:flex;align-items:center;gap:10px;font:400 20px "Young Serif",Georgia,serif;text-decoration:none;color:#fff;white-space:nowrap}
+.brand svg{transition:transform .4s cubic-bezier(.3,1.6,.5,1)}.brand:hover svg{transform:rotate(-12deg) scale(1.12)}
+.tb-links{display:flex;gap:2px;margin-left:auto}
+.tb-links a{color:#d6e2db;text-decoration:none;font-weight:500;font-size:15px;padding:10px 14px;border-radius:999px;transition:background .2s,color .2s}
+.tb-links a:hover{background:rgba(255,255,255,.1);color:#fff}
+.tb-count{font-size:13px;font-weight:600;background:rgba(226,181,74,.16);color:var(--gold);padding:6px 11px;border-radius:999px;white-space:nowrap}
+.tb-count:empty{display:none}
+.gear{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 15px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;font:500 15px Outfit,sans-serif;cursor:pointer;transition:background .2s}
+.gear:hover{background:rgba(255,255,255,.14)}.gear svg{transition:transform .5s}.gear:hover svg{transform:rotate(90deg)}
+.gear:focus-visible,.tb-links a:focus-visible,.brand:focus-visible,.x:focus-visible,.seg button:focus-visible,.sw:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.dr-bg{position:fixed;inset:0;background:rgba(6,24,18,.5);opacity:0;pointer-events:none;transition:opacity .3s;z-index:30}
+.dr-bg.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(390px,100%);background:var(--card);color:var(--ink);z-index:31;padding:22px 22px 30px;overflow-y:auto;transform:translateX(105%);transition:transform .38s cubic-bezier(.2,.8,.2,1);box-shadow:-20px 0 50px -20px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:22px}
+.drawer.open{transform:none}
+.dr-head{display:flex;align-items:center;justify-content:space-between}
+.dr-head h3{font-size:30px}
+.x{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.set{display:flex;flex-direction:column;gap:8px}
+.set-l{font-weight:600;font-size:16px}
+.set small{color:var(--mute);font-size:14px;display:block}
+.set.row{flex-direction:row;align-items:center;justify-content:space-between;gap:14px;cursor:pointer}
+.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px}
+.seg button{flex:1;min-height:40px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:500 14px Outfit,sans-serif;cursor:pointer;transition:background .2s,color .2s}
+.seg button[aria-pressed=true]{background:var(--berry);color:#fff}
+.sw{appearance:none;-webkit-appearance:none;flex:none;width:52px;height:30px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;transition:background .25s;margin:0}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+.sw:checked{background:#2f9e6a}.sw:checked::after{transform:translateX(22px)}
+.nrow{display:flex;gap:8px}
+.nrow input{flex:1;font:16px Outfit,sans-serif;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+.nrow input:focus{outline:3px solid var(--gold);outline-offset:1px;border-color:transparent}
+.dr-note{margin:auto 0 0;font-size:13px;color:var(--mute)}
+@media(max-width:640px){.tb-links{display:none}.gear span{display:none}.gear{padding:0 12px}.brand{font-size:18px}.tb-count{margin-left:auto}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.drawer,.dr-bg{transition:none}}
+@media(max-width:700px){.hero .wrap{grid-template-columns:minmax(0,1fr)}.hero-text{padding-bottom:0}.scene{max-height:300px}}
+@media(prefers-reduced-motion:reduce){.gift{animation:none}.card{opacity:1;transform:none;transition:none}#snow{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="topbar" id="topbar" aria-label="Main">
+  <div class="tb-in">
+    <a class="brand" href="#"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="10" width="18" height="11" rx="2.5" fill="#ec3644"/><rect x="2" y="7" width="20" height="5" rx="2" fill="#ff6b76"/><rect x="10.5" y="7" width="3" height="14" fill="#e2b54a"/><path d="M12 7C10 3 6 3 6.5 5.5 7 7.5 12 7 12 7Zm0 0c2-4 6-4 5.5-1.5C17 7.5 12 7 12 7Z" fill="#e2b54a"/></svg><span>Joseph's List</span></a>
+    <div class="tb-links"><a href="#list">Wish list</a><a href="#know">Sizes</a></div>
+    <span class="tb-count" id="tbCount"></span>
+    <button class="gear" id="openSettings" aria-haspopup="dialog"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Settings</span></button>
+  </div>
+</nav>
+<header class="band hero">
+  <canvas id="snow" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="hero-text">
+      <div class="from">Christmas 2026</div>
+      <h1>Joseph's Christmas List</h1>
+      <p>Here's what I'm hoping for this year. Tap any gift to see where to get it, and hit “I'm getting this” so nobody doubles up.</p>
+      <div class="count" id="count" aria-label="Countdown to Christmas"></div>
+    </div>
+    <svg class="scene" id="scene" viewBox="-10 125 540 292" role="img" aria-label="A pile of shiny wrapped presents with big bows">
+  <defs><symbol id="present" viewBox="0 0 220 240" overflow="visible">
+      <!-- ground shadow -->
+      <ellipse cx="108" cy="226" rx="96" ry="12" fill="#000" opacity=".22"/>
+
+      <!-- BODY: side face -->
+      <path d="M140 104 C160 96 178 88 192 80 C195 120 194 160 190 196 C176 206 158 214 142 220 C145 182 145 142 140 104Z" fill="var(--d)"/>
+      <!-- BODY: front face (slightly puffy) -->
+      <path d="M24 104 C62 110 102 110 140 104 C145 142 145 182 142 220 C102 226 60 226 26 220 C20 182 19 142 24 104Z" fill="var(--m)"/>
+      <!-- front shading: soft dark on right, light on left -->
+      <path d="M104 108 C118 108 130 106 140 104 C145 142 145 182 142 220 C130 222 118 223 106 223 C112 184 112 146 104 108Z" fill="#000" opacity=".10"/>
+      <path d="M24 104 C34 106 44 107 54 108 C50 146 50 186 54 223 C44 223 34 222 26 220 C20 182 19 142 24 104Z" fill="#fff" opacity=".16"/>
+      <path d="M34 124 C33 150 33 178 36 204" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".55"/>
+      <!-- side shading -->
+      <path d="M176 88 C182 85 187 82 192 80 C195 120 194 160 190 196 C185 199 180 202 174 205 C179 166 180 126 176 88Z" fill="#000" opacity=".12"/>
+
+      <!-- BODY ribbon: front -->
+      <path d="M71 109 C70 146 70 184 72 225 L95 225 C93 184 93 146 94 109Z" fill="var(--r)"/>
+      <path d="M77 112 C76 148 76 184 78 220" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+      <path d="M90 110 C89 148 89 186 91 225 L95 225 C93 184 93 146 94 109Z" fill="#000" opacity=".15"/>
+      <!-- BODY ribbon: side -->
+      <path d="M160 96 C163 134 163 172 161 212 L172 207 C175 168 175 130 172 90Z" fill="var(--rd)"/>
+
+      <!-- LID: side -->
+      <path d="M146 80 C166 72 184 64 200 56 C202 68 202 80 200 92 C184 100 166 108 146 116 C148 104 148 92 146 80Z" fill="var(--d)"/>
+      <!-- LID: front band -->
+      <path d="M14 82 C58 88 104 88 146 80 C148 92 148 104 146 116 C104 124 58 124 16 118 C13 106 12 94 14 82Z" fill="var(--m)"/>
+      <path d="M14 82 C58 88 104 88 146 80 C147 86 147 91 147 96 C104 103 58 103 15 97 C14 92 14 87 14 82Z" fill="#fff" opacity=".18"/>
+      <path d="M110 86 C122 85 134 83 146 80 C148 92 148 104 146 116 C134 119 122 121 110 122Z" fill="#000" opacity=".10"/>
+      <path d="M26 96 C46 99 66 100 86 100" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+      <!-- LID: top -->
+      <path d="M14 82 C40 70 68 60 96 52 C130 46 168 48 200 56 C184 64 166 72 146 80 C104 88 58 88 14 82Z" fill="var(--l)"/>
+      <path d="M40 76 C64 66 92 58 120 56" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".5"/>
+      <!-- LID ribbon: front + side -->
+      <path d="M70 86 C70 98 70 110 71 122 L95 122 C94 110 94 98 95 86Z" fill="var(--r)"/>
+      <path d="M77 89 C77 100 77 110 78 119" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+      <path d="M166 72 C168 84 168 96 166 108 L177 103 C179 91 179 79 177 67Z" fill="var(--rd)"/>
+      <!-- LID ribbon: top cross -->
+      <path d="M70 86 C92 76 112 66 132 54 L150 52 C132 64 112 76 95 86Z" fill="var(--r)"/>
+      <path d="M38 77 C76 72 120 70 177 67 L166 72 C120 76 78 80 52 82Z" fill="var(--r)"/>
+      <path d="M38 77 C76 72 120 70 177 67" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+
+      <!-- BOW tails -->
+      <path d="M104 70 C96 86 86 100 70 112 L82 112 L84 124 C100 110 108 92 112 72Z" fill="var(--rd)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M112 70 C122 84 136 96 152 104 L140 108 L142 120 C126 110 114 94 106 74Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M116 78 C124 88 134 96 144 102" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+      <!-- BOW back loops -->
+      <path d="M108 66 C92 46 62 30 50 46 C40 60 66 74 108 66Z" fill="var(--rd)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M108 66 C126 44 160 30 170 48 C178 62 150 74 108 66Z" fill="var(--rd)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <!-- BOW top loops -->
+      <path d="M106 64 C96 34 78 10 66 18 C54 28 74 54 106 64Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M110 64 C120 34 140 12 152 20 C164 30 142 56 110 64Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M74 24 C80 32 88 44 96 54" fill="none" stroke="var(--rk)" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+      <path d="M144 26 C138 34 130 46 120 56" fill="none" stroke="var(--rk)" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+      <!-- BOW front loops -->
+      <path d="M106 68 C80 58 40 54 32 72 C26 88 62 90 106 68Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M110 68 C136 56 176 54 184 72 C190 88 154 90 110 68Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M44 66 C58 62 76 62 92 66" fill="none" stroke="var(--rk)" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+      <path d="M172 66 C158 62 140 62 124 66" fill="none" stroke="var(--rk)" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+      <!-- bow shine -->
+      <ellipse cx="74" cy="26" rx="6" ry="3.4" transform="rotate(-40 74 26)" fill="#fff" opacity=".75"/>
+      <ellipse cx="148" cy="26" rx="6" ry="3.4" transform="rotate(40 148 26)" fill="#fff" opacity=".6"/>
+      <ellipse cx="44" cy="66" rx="8" ry="3.6" transform="rotate(-10 44 66)" fill="#fff" opacity=".7"/>
+      <ellipse cx="172" cy="66" rx="8" ry="3.6" transform="rotate(10 172 66)" fill="#fff" opacity=".55"/>
+      <!-- knot -->
+      <path d="M96 58 C100 52 116 52 120 58 C124 66 120 76 108 78 C96 76 92 66 96 58Z" fill="var(--r)" stroke="var(--rk)" stroke-width="2.5"/>
+      <ellipse cx="103" cy="61" rx="5" ry="3.2" fill="#fff" opacity=".7"/>
+      <path d="M100 74 C106 77 112 77 117 73" fill="none" stroke="var(--rk)" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+    </symbol></defs>
+  <g class="gift"><use href="#present" x="36" y="151" width="196" height="214" style="--l:#c8ff8f;--m:#5fd13a;--d:#2b8a1a;--r:#ff3d4d;--rd:#c41a2e;--rk:#7d0d1c"/></g>
+  <g class="gift"><use href="#present" x="300" y="138" width="206" height="225" style="--l:#fff38a;--m:#ffc81f;--d:#c78600;--r:#a77bff;--rd:#5a2fd0;--rk:#2e1475"/></g>
+  <g class="gift"><use href="#present" x="138" y="182" width="214" height="233" style="--l:#ffa3a3;--m:#ec3644;--d:#9c1426;--r:#9cf06a;--rd:#3f9e22;--rk:#1f5c10"/></g>
+  <g class="gift"><use href="#present" x="-6" y="250" width="150" height="164" style="--l:#b6ecff;--m:#3aa8f2;--d:#1b5fb0;--r:#ffe066;--rd:#d89a10;--rk:#7a5200"/></g>
+  <g class="gift"><use href="#present" x="362" y="244" width="158" height="172" style="--l:#ffd6ea;--m:#ff74b8;--d:#c43a80;--r:#ffffff;--rd:#d9cfee;--rk:#8a7bab"/></g>
+</svg>
+  </div>
+  <svg class="drift" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70V38C80 18 150 14 240 30S420 52 520 34 700 8 820 26 1010 50 1100 30 1180 22 1200 26V70Z" fill="var(--bg)"/><path d="M0 70V50C120 36 210 40 330 50S560 60 700 46 960 40 1200 52V70Z" fill="var(--bg)" opacity=".6"/></svg>
+</header>
+
+<main class="band" id="list">
+  <div class="wrap">
+    <div class="bar">
+      <h2>Wish list</h2>
+      <select id="sort" aria-label="Sort gifts">
+        <option value="pri">Sort: most wanted first</option>
+        <option value="low">Sort: price, low to high</option>
+        <option value="high">Sort: price, high to low</option>
+      </select>
+    </div>
+    <div class="who" id="who" aria-live="polite"><div><span class="dot"></span><b>Checking who's here…</b></div></div>
+    <div class="chips" id="chips" role="group" aria-label="Filter by category" style="margin-bottom:22px"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<section class="band know" id="know">
+  <div class="wrap">
+    <h2>Good to know</h2>
+    <div class="kgrid" id="know"></div>
+  </div>
+</section>
+
+<div id="toast" role="status"></div>
+<div class="dr-bg" id="setBg"></div>
+<aside class="drawer" id="settings" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="dr-head"><h3 id="setTitle">Settings</h3><button class="x" id="closeSettings" aria-label="Close settings"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button></div>
+  <div class="set"><span class="set-l">Theme</span><div class="seg" data-k="theme"><button data-v="auto">Auto</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
+  <div class="set"><span class="set-l">Snow</span><div class="seg" data-k="snow"><button data-v="0">Off</button><button data-v="0.5">Light</button><button data-v="1">Normal</button><button data-v="2.2">Blizzard</button></div></div>
+  <label class="set row" for="hideTaken"><span><span class="set-l">Hide taken gifts</span><small>Only show what's still up for grabs.</small></span><input type="checkbox" id="hideTaken" class="sw"></label>
+  <div class="set"><label class="set-l" for="setName">Your name</label><small>Shows on any gift you claim.</small><div class="nrow"><input id="setName" maxlength="30" autocomplete="given-name" placeholder="e.g. Aunt Linda"><button class="claim" id="saveName">Save</button></div></div>
+  <p class="dr-note">Settings are saved on this device.</p>
+</aside>
+<div class="modal" id="namebox" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
+  <form id="nameForm">
+    <h3 id="nameTitle">What's your name?</h3>
+    <p>This is a shared list, so your name shows on anything you claim. That way nobody gets Joseph the same thing twice.</p>
+    <label for="nameIn" class="cat">Your name</label>
+    <input id="nameIn" autocomplete="given-name" maxlength="30" placeholder="e.g. Aunt Linda">
+    <div class="mrow"><button type="button" id="nameCancel">Cancel</button><button type="submit">Save</button></div>
+  </form>
+</div>
+<footer class="band">
+  <b>Merry Christmas</b>
+  See you on the 25th. — Made by Joseph
+</footer>
+
+<script>
+{
+// ====== EDIT YOUR LIST HERE ======
+// wrap important bits in **double stars** to make them bold
+// warn: optional big heads-up box on a card
+// qty: how many people can claim it, or "any" for no limit (e.g. gift cards). Leave out for 1.
+// priority: "top" (really want), "would" (would love), "nice" (nice to have), "stock" (stocking stuffer)
+const gifts = [
+  {store:"Apple", name:"Apple gift card", cat:"Gift cards", pri:"stock", qty:"any", price:25, note:"A **$25** Apple gift card — works for the App Store, apps and more.", link:"https://www.apple.com/shop/gift-cards"},
+  {store:"Starbucks", name:"Starbucks gift card", cat:"Gift cards", pri:"stock", qty:"any", price:25, priceText:"$25–50", note:"Any amount from **$25 to $50**, whatever works for you.", link:"https://www.starbucks.com/gift"},
+  {store:"American Eagle", name:"Snoopy flannel PJ pants", cat:"Clothes", pri:"would", price:26.97, note:"American Eagle, **charcoal**, **size Large**. On sale right now (usually $44.95).", link:"https://www.ae.com/us/en/p/men/loungewear-pjs/pajamas/aeo-snoopy-flannel-pj-pant/0239_2138_008"},
+  {store:"American Eagle", name:"Cozy Cabin graphic sweater", cat:"Clothes", pri:"top", price:52.46, note:"American Eagle, **soft oat**, **size 2XL**. On sale right now (usually $74.95).", link:"https://www.ae.com/us/en/p/men/tops/sweaters/ae-cozy-cabin-graphic-sweater/1142_2391_164"},
+  {store:"American Eagle", name:"Boxy fit layered t-shirt", cat:"Clothes", pri:"top", price:34.96, note:"American Eagle, **navy**, **size XL**. On sale right now (usually $49.95).", link:"https://www.ae.com/us/en/p/men/tops/t-shirts/ae-boxy-fit-layered-t-shirt/2171_5479_410"},
+  {store:"American Eagle", name:"Peanuts crew socks 3-pack", cat:"Clothes", pri:"would", price:19.95, note:"American Eagle, **white**, **one size**. Three pairs of Peanuts crew socks.", link:"https://www.ae.com/us/en/p/men/accessories-socks/socks/ae-peanuts-crew-socks-3-pack/0225_8239_100"},
+  {store:"American Eagle", name:"Touchpoint gloves", cat:"Clothes", pri:"would", price:13.96, note:"American Eagle, **charcoal heather gray**, **one size**. Touchscreen-friendly so I can still use my phone. On sale right now (usually $19.95).", link:"https://www.ae.com/us/en/p/men/accessories-socks/cold-weather-accessories/ae-touchpoint-gloves/0226_9245_029"},
   {store:"eBay", name:"Ty Classic 2009 St. Bernard plush", cat:"Plush", pri:"top", price:25, note:"20\" floppy puppy on eBay, **used** (missing its paper tag). Plus **$19.80 shipping**, and the seller doesn't take returns. It's a one-off listing, so grab it before it's gone.", link:"https://www.ebay.com/itm/267784121408"},
   {store:"Amazon", name:"Pepperidge Farm Gingerman cookies", cat:"Snacks", pri:"would", price:0, note:"The **ginger** gingerbread men cookies.", link:"https://www.amazon.com/dp/B0FBZ7YF7J?th=1"},
   {store:"Amazon", name:"Cheese squishy stress ball", cat:"Toys", pri:"would", price:12.69, note:"The squishy cheese stress ball on Amazon. **Black Friday deal** right now (usually $16.99).", link:"https://www.amazon.com/dp/B0GY83Y33Y?th=1"},
