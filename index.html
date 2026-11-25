@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="light" data-holiday="christmas">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -137,7 +137,7 @@ footer b{font-family:"Young Serif",serif;font-weight:400;font-size:22px;color:#f
 .gift.wob{animation:wob .6s cubic-bezier(.3,1.6,.5,1)}
 @keyframes wob{0%{transform:scale(1)}30%{transform:scale(1.08,.92)}60%{transform:scale(.96,1.05)}100%{transform:scale(1)}}
 html{scroll-padding-top:76px;scroll-behavior:smooth}
-.topbar{position:sticky;top:0;z-index:20;background:rgba(12,48,36,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#f3efe6;border-bottom:1px solid rgba(255,255,255,.08);transition:box-shadow .3s}
+.topbar{position:sticky;top:0;z-index:20;background:var(--bar);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#f3efe6;border-bottom:1px solid rgba(255,255,255,.08);transition:box-shadow .3s}
 .topbar.scrolled{box-shadow:0 10px 28px -14px rgba(0,0,0,.6)}
 .tb-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:10px max(5vw,16px)}
 .brand{display:flex;align-items:center;gap:10px;font:400 20px "Young Serif",Georgia,serif;text-decoration:none;color:#fff;white-space:nowrap}
@@ -173,6 +173,17 @@ html{scroll-padding-top:76px;scroll-behavior:smooth}
 .dr-note{margin:auto 0 0;font-size:13px;color:var(--mute)}
 @media(max-width:640px){.tb-links{display:none}.gear span{display:none}.gear{padding:0 12px}.brand{font-size:18px}.tb-count{margin-left:auto}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.drawer,.dr-bg{transition:none}}
+/* holiday themes */
+:root{--bar:rgba(12,48,36,.86)}
+.hero,.topbar,footer,.know,.btn,.stamp,.pri.top,.chip,.seg button{transition:background-color .5s,color .3s,border-color .3s}
+:root[data-holiday=hanukkah]{--pine:#13306e;--berry:#2c64d4;--gold:#d9e3f2;--bar:rgba(14,36,84,.88);--bg:light-dark(#f3f6fc,#0b1838);--card:light-dark(#fff,#12234d);--line:light-dark(#dbe3f1,#22386e)}
+:root[data-holiday=newyear]{--pine:#1c1747;--berry:#7b4fe0;--gold:#f2c94c;--bar:rgba(22,18,58,.88);--bg:light-dark(#f6f4fb,#110e2b);--card:light-dark(#fff,#1d1846);--line:light-dark(#e3def2,#2f2866)}
+:root[data-holiday=valentines]{--pine:#7a1236;--berry:#e0457b;--gold:#ffc2d4;--bar:rgba(96,14,42,.88);--bg:light-dark(#fff5f7,#2a0a17);--card:light-dark(#fff,#3a0f21);--line:light-dark(#f3dbe2,#5a1c35)}
+:root[data-holiday=halloween]{--pine:#26132f;--berry:#ea6f14;--gold:#a6e34f;--bar:rgba(32,15,40,.9);--bg:light-dark(#fbf6ef,#160a1b);--card:light-dark(#fff,#24122d);--line:light-dark(#efe2d2,#3d2348)}
+:root[data-holiday=thanksgiving]{--pine:#5a2e12;--berry:#c4561d;--gold:#f0b44c;--bar:rgba(74,37,14,.9);--bg:light-dark(#fbf5ec,#1f1209);--card:light-dark(#fff,#2e1b0e);--line:light-dark(#efe1cc,#4a2d17)}
+.seg.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-radius:18px}
+.seg.grid3 button{border-radius:14px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 6px}
+.sw8{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)}
 @media(max-width:700px){.hero .wrap{grid-template-columns:minmax(0,1fr)}.hero-text{padding-bottom:0}.scene{max-height:300px}}
 @media(prefers-reduced-motion:reduce){.gift{animation:none}.card{opacity:1;transform:none;transition:none}#snow{display:none}}
 </style>
@@ -310,7 +321,8 @@ html{scroll-padding-top:76px;scroll-behavior:smooth}
 <aside class="drawer" id="settings" role="dialog" aria-modal="true" aria-labelledby="setTitle">
   <div class="dr-head"><h3 id="setTitle">Settings</h3><button class="x" id="closeSettings" aria-label="Close settings"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button></div>
   <div class="set"><span class="set-l">Theme</span><div class="seg" data-k="theme"><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
-  <div class="set"><span class="set-l">Snow</span><div class="seg" data-k="snow"><button data-v="0">Off</button><button data-v="0.5">Light</button><button data-v="1">Normal</button><button data-v="2.2">Blizzard</button></div></div>
+  <div class="set"><span class="set-l">Holiday theme</span><div class="seg grid3" data-k="holiday"><button data-v="christmas"><span class="sw8" style="background:linear-gradient(135deg,#0f3d2e 50%,#c4283a 50%)"></span>Christmas</button><button data-v="hanukkah"><span class="sw8" style="background:linear-gradient(135deg,#13306e 50%,#d9e3f2 50%)"></span>Hanukkah</button><button data-v="newyear"><span class="sw8" style="background:linear-gradient(135deg,#1c1747 50%,#f2c94c 50%)"></span>New Year</button><button data-v="valentines"><span class="sw8" style="background:linear-gradient(135deg,#7a1236 50%,#e0457b 50%)"></span>Valentine's</button><button data-v="halloween"><span class="sw8" style="background:linear-gradient(135deg,#26132f 50%,#ea6f14 50%)"></span>Halloween</button><button data-v="thanksgiving"><span class="sw8" style="background:linear-gradient(135deg,#5a2e12 50%,#f0b44c 50%)"></span>Thanksgiving</button></div></div>
+  <div class="set"><span class="set-l">Effects</span><div class="seg" data-k="snow"><button data-v="0">Off</button><button data-v="0.5">Light</button><button data-v="1">Normal</button><button data-v="2.2">Blizzard</button></div></div>
   <label class="set row" for="hideTaken"><span><span class="set-l">Hide taken gifts</span><small>Only show what's still up for grabs.</small></span><input type="checkbox" id="hideTaken" class="sw"></label>
   <div class="set"><label class="set-l" for="setName">Your name</label><small>Shows on any gift you claim.</small><div class="nrow"><input id="setName" maxlength="30" autocomplete="given-name" placeholder="e.g. Aunt Linda"><button class="claim" id="saveName">Save</button></div></div>
   <p class="dr-note">Settings are saved on this device.</p>
@@ -382,12 +394,13 @@ const qtyOf=g=>g.qty==='any'?Infinity:Math.max(1,g.qty||1);
 const gotSlots=g=>Object.keys(claims).filter(k=>k===g.id||k.startsWith(g.id+'~'));
 const slots=g=>Array.from({length:qtyOf(g)},(_,i)=>i?g.id+'~'+(i+1):g.id);
 const isFull=g=>gotSlots(g).length>=qtyOf(g);
-const SET_DEF={theme:'light',snow:'1',hideTaken:false};
+const SET_DEF={theme:'light',holiday:'christmas',snow:'1',hideTaken:false};
 let settings={...SET_DEF};try{Object.assign(settings,JSON.parse(LS.get('xmas-settings')||'{}'))}catch(e){}
 const saveSet=()=>LS.set('xmas-settings',JSON.stringify(settings));
 let applySnow=()=>{};
 function applyTheme(){if(settings.theme!=='dark')settings.theme='light';document.documentElement.dataset.theme=settings.theme}
-applyTheme();
+function applyHoliday(){if(!['christmas','hanukkah','newyear','valentines','halloween','thanksgiving'].includes(settings.holiday))settings.holiday='christmas';document.documentElement.dataset.holiday=settings.holiday}
+applyTheme();applyHoliday();
 const saveMine=()=>LS.set('xmas-mine',JSON.stringify([...mineIds]));
 function render(){
   let list=gifts.filter(g=>cat==="All"||g.cat===cat);
@@ -480,6 +493,7 @@ dr.querySelectorAll('.seg').forEach(sg=>sg.addEventListener('click',e=>{
   settings[sg.dataset.k]=b.dataset.v;saveSet();syncSet();
   if(sg.dataset.k==='theme')applyTheme();
   if(sg.dataset.k==='snow')applySnow();
+  if(sg.dataset.k==='holiday'){applyHoliday();applySnow()}
 }));
 hideEl.addEventListener('change',()=>{settings.hideTaken=hideEl.checked;saveSet();render()});
 document.getElementById('saveName').addEventListener('click',()=>{
@@ -560,20 +574,29 @@ tick();setInterval(tick,1000);
 // presents: squish on click
 document.querySelectorAll('#scene .gift').forEach(g=>g.addEventListener('click',()=>{g.classList.remove('wob');g.style.animationDelay='0s';void g.getBBox();g.classList.add('wob')}));
 
-// snow
+// snow + holiday effects
+const HOLI={christmas:{shape:'snow',cols:[[255,255,255]]},hanukkah:{shape:'star',cols:[[255,255,255],[170,205,255]]},newyear:{shape:'confetti',cols:[[242,201,76],[255,255,255],[190,160,255],[255,120,170],[110,210,255]]},valentines:{shape:'heart',cols:[[255,150,185],[255,255,255],[255,85,130]]},halloween:{shape:'leaf',cols:[[240,122,26],[166,227,79],[181,108,255]]},thanksgiving:{shape:'leaf',cols:[[240,180,76],[204,90,30],[160,50,26],[242,200,90]]}};
 const cv=document.getElementById('snow'),ctx=cv.getContext&&cv.getContext('2d');
 if(ctx&&!reduce){
   let W,H,flakes=[],mx=-999,my=-999,t=0;
   const hero=cv.parentElement;
-  const make=(top)=>{const z=Math.random()**1.6;const crystal=Math.random()<.07;return{x:Math.random()*W,y:top?-10:Math.random()*H,z,r:crystal?5+z*7:.6+z*3.4,crystal,a:Math.random()*6.28,spin:(Math.random()-.5)*.03,ph:Math.random()*6.28,vx:0,vy:0}};
+  const th=()=>HOLI[settings.holiday]||HOLI.christmas;
+  const make=(top)=>{const T=th(),z=Math.random()**1.6,odds=T.shape==='snow'?.07:T.shape==='star'?.2:.5,crystal=Math.random()<odds,col=T.cols[Math.floor(Math.random()*T.cols.length)];return{x:Math.random()*W,y:top?-12:Math.random()*H,z,r:crystal?(T.shape==='snow'?5+z*7:4+z*6):.6+z*3.4,crystal,col,a:Math.random()*6.28,spin:(Math.random()-.5)*(T.shape==='snow'?.03:.06),ph:Math.random()*6.28,vx:0,vy:0}};
   const size=()=>{const pr=devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*pr;cv.height=H*pr;ctx.setTransform(pr,0,0,pr,0,0);flakes=Array.from({length:Math.round(W*H/5200*(+settings.snow||0))},()=>make(false))};
   size();new ResizeObserver(size).observe(cv);
   applySnow=()=>{cv.style.display=+settings.snow?'':'none';size()};applySnow();
   hero.addEventListener('pointermove',e=>{const b=cv.getBoundingClientRect();mx=e.clientX-b.left;my=e.clientY-b.top});
   hero.addEventListener('pointerleave',()=>{mx=my=-999});
-  const star=(f,al)=>{ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.a);ctx.strokeStyle=`rgba(255,255,255,${al})`;ctx.lineWidth=1.2;ctx.lineCap='round';ctx.beginPath();
-    for(let i=0;i<6;i++){ctx.rotate(Math.PI/3);ctx.moveTo(0,0);ctx.lineTo(0,-f.r);ctx.moveTo(0,-f.r*.55);ctx.lineTo(f.r*.28,-f.r*.78);ctx.moveTo(0,-f.r*.55);ctx.lineTo(-f.r*.28,-f.r*.78)}
-    ctx.stroke();ctx.restore()};
+  const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  const special=(f,al)=>{const r=f.r,S=th().shape;ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.a);
+    if(S==='snow'){ctx.strokeStyle=rgba(f.col,al);ctx.lineWidth=1.2;ctx.lineCap='round';ctx.beginPath();
+      for(let i=0;i<6;i++){ctx.rotate(Math.PI/3);ctx.moveTo(0,0);ctx.lineTo(0,-r);ctx.moveTo(0,-r*.55);ctx.lineTo(r*.28,-r*.78);ctx.moveTo(0,-r*.55);ctx.lineTo(-r*.28,-r*.78)}ctx.stroke()}
+    else if(S==='star'){ctx.strokeStyle=rgba(f.col,al);ctx.lineWidth=1.4;ctx.lineJoin='round';
+      for(const k of [0,Math.PI]){ctx.beginPath();for(let i=0;i<3;i++){const q=k+i*2.0944-Math.PI/2;ctx[i?'lineTo':'moveTo'](Math.cos(q)*r,Math.sin(q)*r)}ctx.closePath();ctx.stroke()}}
+    else if(S==='confetti'){ctx.scale(1,Math.cos(f.ph*3));ctx.fillStyle=rgba(f.col,Math.min(1,al+.2));ctx.fillRect(-r*.5,-r*.9,r,r*1.8)}
+    else if(S==='heart'){ctx.fillStyle=rgba(f.col,Math.min(1,al+.15));ctx.beginPath();ctx.moveTo(0,r*.9);ctx.bezierCurveTo(-r*1.4,0,-r*.9,-r*1.1,0,-r*.35);ctx.bezierCurveTo(r*.9,-r*1.1,r*1.4,0,0,r*.9);ctx.fill()}
+    else{ctx.fillStyle=rgba(f.col,Math.min(1,al+.2));ctx.beginPath();ctx.ellipse(0,0,r,r*.48,0,0,6.283);ctx.fill();ctx.strokeStyle=rgba([0,0,0],.18);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.stroke()}
+    ctx.restore()};
   (function loop(){
     if(!+settings.snow){requestAnimationFrame(loop);return}
     t+=1;const wind=Math.sin(t*.004)*.5+Math.sin(t*.0013)*.7;
@@ -588,9 +611,9 @@ if(ctx&&!reduce){
       if(f.y>H+12)Object.assign(f,make(true));
       if(f.x>W+12)f.x=-12;else if(f.x<-12)f.x=W+12;
       const al=(.35+f.z*.6)*(.75+.25*Math.sin(f.ph*2.3));
-      if(f.crystal){star(f,al);continue}
-      if(f.z>.75){const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r*1.8);g.addColorStop(0,`rgba(255,255,255,${al})`);g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(f.x,f.y,f.r*1.8,0,6.283);ctx.fill()}
-      else{ctx.fillStyle=`rgba(255,255,255,${al})`;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,6.283);ctx.fill()}
+      if(f.crystal){special(f,al);continue}
+      if(f.z>.75){const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r*1.8);g.addColorStop(0,rgba(f.col,al));g.addColorStop(1,rgba(f.col,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(f.x,f.y,f.r*1.8,0,6.283);ctx.fill()}
+      else{ctx.fillStyle=rgba(f.col,al);ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,6.283);ctx.fill()}
     }
     requestAnimationFrame(loop)})();
 }
