@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -309,7 +309,7 @@ html{scroll-padding-top:76px;scroll-behavior:smooth}
 <div class="dr-bg" id="setBg"></div>
 <aside class="drawer" id="settings" role="dialog" aria-modal="true" aria-labelledby="setTitle">
   <div class="dr-head"><h3 id="setTitle">Settings</h3><button class="x" id="closeSettings" aria-label="Close settings"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button></div>
-  <div class="set"><span class="set-l">Theme</span><div class="seg" data-k="theme"><button data-v="auto">Auto</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
+  <div class="set"><span class="set-l">Theme</span><div class="seg" data-k="theme"><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
   <div class="set"><span class="set-l">Snow</span><div class="seg" data-k="snow"><button data-v="0">Off</button><button data-v="0.5">Light</button><button data-v="1">Normal</button><button data-v="2.2">Blizzard</button></div></div>
   <label class="set row" for="hideTaken"><span><span class="set-l">Hide taken gifts</span><small>Only show what's still up for grabs.</small></span><input type="checkbox" id="hideTaken" class="sw"></label>
   <div class="set"><label class="set-l" for="setName">Your name</label><small>Shows on any gift you claim.</small><div class="nrow"><input id="setName" maxlength="30" autocomplete="given-name" placeholder="e.g. Aunt Linda"><button class="claim" id="saveName">Save</button></div></div>
@@ -382,11 +382,11 @@ const qtyOf=g=>g.qty==='any'?Infinity:Math.max(1,g.qty||1);
 const gotSlots=g=>Object.keys(claims).filter(k=>k===g.id||k.startsWith(g.id+'~'));
 const slots=g=>Array.from({length:qtyOf(g)},(_,i)=>i?g.id+'~'+(i+1):g.id);
 const isFull=g=>gotSlots(g).length>=qtyOf(g);
-const SET_DEF={theme:'auto',snow:'1',hideTaken:false};
+const SET_DEF={theme:'light',snow:'1',hideTaken:false};
 let settings={...SET_DEF};try{Object.assign(settings,JSON.parse(LS.get('xmas-settings')||'{}'))}catch(e){}
 const saveSet=()=>LS.set('xmas-settings',JSON.stringify(settings));
 let applySnow=()=>{};
-function applyTheme(){const r=document.documentElement;if(settings.theme==='light'||settings.theme==='dark')r.dataset.theme=settings.theme;else delete r.dataset.theme}
+function applyTheme(){if(settings.theme!=='dark')settings.theme='light';document.documentElement.dataset.theme=settings.theme}
 applyTheme();
 const saveMine=()=>LS.set('xmas-mine',JSON.stringify([...mineIds]));
 function render(){
