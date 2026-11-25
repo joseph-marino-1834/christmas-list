@@ -62,6 +62,7 @@ select{font-size:16px;padding-right:12px}
 .pri{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
 .pri.top{background:var(--berry);color:#fff}
 .pri.would{background:light-dark(#fbefd0,#3b3418);color:light-dark(#7a5a10,#f0d488)}
+.pri.stock{background:light-dark(#fde2e4,#4a1d24);color:light-dark(#a3162a,#ffb3bc)}
 .pri.nice{background:light-dark(#e3efe8,#1d4a39);color:light-dark(#1d5a41,#bfe0cf)}
 .store{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--berry)}
 :root[data-theme=dark] .store{color:var(--gold)}
@@ -325,10 +326,10 @@ html{scroll-padding-top:76px;scroll-behavior:smooth}
 // wrap important bits in **double stars** to make them bold
 // warn: optional big heads-up box on a card
 // qty: how many people can claim it, or "any" for no limit (e.g. gift cards). Leave out for 1.
-// priority: "top" (really want), "would" (would love), "nice" (nice to have)
+// priority: "top" (really want), "would" (would love), "nice" (nice to have), "stock" (stocking stuffer)
 const gifts = [
-  {store:"Apple", name:"Apple gift card", cat:"Gift cards", pri:"would", qty:"any", price:25, note:"A **$25** Apple gift card — works for the App Store, apps and more.", link:"https://www.apple.com/shop/gift-cards"},
-  {store:"Starbucks", name:"Starbucks gift card", cat:"Gift cards", pri:"would", qty:"any", price:25, priceText:"$25–50", note:"Any amount from **$25 to $50**, whatever works for you.", link:"https://www.starbucks.com/gift"},
+  {store:"Apple", name:"Apple gift card", cat:"Gift cards", pri:"stock", qty:"any", price:25, note:"A **$25** Apple gift card — works for the App Store, apps and more.", link:"https://www.apple.com/shop/gift-cards"},
+  {store:"Starbucks", name:"Starbucks gift card", cat:"Gift cards", pri:"stock", qty:"any", price:25, priceText:"$25–50", note:"Any amount from **$25 to $50**, whatever works for you.", link:"https://www.starbucks.com/gift"},
   {store:"American Eagle", name:"Snoopy flannel PJ pants", cat:"Clothes", pri:"would", price:26.97, note:"American Eagle, **charcoal**, **size Large**. On sale right now (usually $44.95).", link:"https://www.ae.com/us/en/p/men/loungewear-pjs/pajamas/aeo-snoopy-flannel-pj-pant/0239_2138_008"},
   {store:"American Eagle", name:"Cozy Cabin graphic sweater", cat:"Clothes", pri:"top", price:52.46, note:"American Eagle, **soft oat**, **size 2XL**. On sale right now (usually $74.95).", link:"https://www.ae.com/us/en/p/men/tops/sweaters/ae-cozy-cabin-graphic-sweater/1142_2391_164"},
   {store:"American Eagle", name:"Boxy fit layered t-shirt", cat:"Clothes", pri:"top", price:34.96, note:"American Eagle, **navy**, **size XL**. On sale right now (usually $49.95).", link:"https://www.ae.com/us/en/p/men/tops/t-shirts/ae-boxy-fit-layered-t-shirt/2171_5479_410"},
@@ -350,7 +351,7 @@ const info = [
 // ==================================
 
 gifts.forEach(g=>g.id=g.id||g.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""));
-const priOrder={top:0,would:1,nice:2}, priLabel={top:"Really want",would:"Would love",nice:"Nice to have"};
+const priOrder={top:0,would:1,nice:2,stock:3}, priLabel={top:"Really want",would:"Would love",nice:"Nice to have",stock:"Stocking stuffer"};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const grid=document.getElementById('grid'), chips=document.getElementById('chips'), sortSel=document.getElementById('sort');
 let cat="All";
